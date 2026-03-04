@@ -10,6 +10,9 @@ const { importExternalProfile } = require("../ops/importer");
 const { buildProfileComparison } = require("../ops/compare");
 const { loadPlugins, emitPluginEvent } = require("../ops/plugins");
 const { loadTelemetryConfig, setTelemetryOptIn, trackTelemetryEvent } = require("../ops/telemetry");
+const { runInteractiveShell, shouldUseInteractiveShell } = require("./tui-shell");
+const { SettingsManager } = require("../config/settings-manager");
+const { runSetupWizard } = require("./setup-wizard");
 
 function parseArgs(argv) {
   const args = new Map();
@@ -82,22 +85,136 @@ function parseCompareProfileIds(compareArg, normalizedProfileId, rawProfileId) {
   return [normalizedProfileId, parts[0]];
 }
 
+function applyInteractiveAction(args, action) {
+  if (action === "continue-interview") {
+    args.set("--resume", true);
+    return;
+  }
+  if (action === "diagnostics") {
+    args.set("--status", true);
+    return;
+  }
+  if (action === "generate-document") {
+    args.set("--status", true);
+    if (!args.get("--export")) {
+      args.set("--export", true);
+    }
+  }
+}
+
+function isTerminalInteractive(stdin, stdout) {
+  return Boolean(stdin?.isTTY && stdout?.isTTY);
+}
+
 async function runFromCliWithDeps(argv, deps = {}) {
   const args = parseArgs(argv);
-  const ioFactory = deps.ioFactory || createTerminalIO;
+  const stdin = deps.stdin || process.stdin;
+  const stdout = deps.stdout || process.stdout;
+  const ioFactory = deps.ioFactory || (() => createTerminalIO({ input: stdin, output: stdout }));
   const runSessionFn = deps.runSessionFn || runSession;
+  const runInteractiveShellFn = deps.tuiRunner || runInteractiveShell;
+  const shouldUseInteractiveShellFn = deps.shouldUseInteractiveShellFn || shouldUseInteractiveShell;
+  const setupWizardFn = deps.setupWizardFn || runSetupWizard;
   const sessionManagerFactory =
     deps.sessionManagerFactory || ((base, options) => new SessionManager(base, options));
+  const settingsManagerFactory =
+    deps.settingsManagerFactory || ((base, options) => new SettingsManager(base, options));
   const loadPluginsFn = deps.loadPluginsFn || loadPlugins;
   const emitPluginEventFn = deps.emitPluginEventFn || emitPluginEvent;
   const loadTelemetryConfigFn = deps.loadTelemetryConfigFn || loadTelemetryConfig;
   const setTelemetryOptInFn = deps.setTelemetryOptInFn || setTelemetryOptIn;
   const trackTelemetryEventFn = deps.trackTelemetryEventFn || trackTelemetryEvent;
-  const io = ioFactory();
-  const baseDir = args.get("--baseDir") || path.join(os.homedir(), ".mindclone");
-  const rawProfileId = args.get("--profile");
+  const encryptionKey = process.env.MINDCLONE_ENCRYPTION_KEY || "";
+  let baseDir = args.get("--baseDir") || path.join(os.homedir(), ".mindclone");
+  let settingsManager = settingsManagerFactory(baseDir, { encryptionKey });
+  let loadedSettings = await settingsManager.loadSettings();
+  let settings = loadedSettings.settings;
+  let settingsExists = loadedSettings.exists;
+  if (!args.get("--baseDir") && settings.baseDir && settings.baseDir !== baseDir) {
+    baseDir = settings.baseDir;
+    settingsManager = settingsManagerFactory(baseDir, { encryptionKey });
+    loadedSettings = await settingsManager.loadSettings();
+    settings = loadedSettings.settings;
+    settingsExists = loadedSettings.exists;
+  }
+
+  const explicitSetupMode = Boolean(args.get("--setup"));
+  const interactiveEnabled = shouldUseInteractiveShellFn({ args, stdin, stdout });
+  const settingsWarnings = [];
+  let sessionApiKey = "";
+
+  const runWizardAndPersist = async (mode, profileIdHint) => {
+    const wizardResult = await setupWizardFn({
+      mode,
+      initialSettings: settings,
+      baseDir,
+      profileIdHint,
+    });
+    if (!wizardResult || !wizardResult.settings) {
+      throw new Error("Setup cancelado: configuracoes invalidas retornadas pelo wizard.");
+    }
+    const selectedBaseDir = String(wizardResult.settings.baseDir || baseDir).trim() || baseDir;
+    if (selectedBaseDir !== baseDir) {
+      baseDir = selectedBaseDir;
+      settingsManager = settingsManagerFactory(baseDir, { encryptionKey });
+    }
+    settings = await settingsManager.saveSettings(wizardResult.settings);
+    settingsExists = true;
+    if (wizardResult.openaiApiKey) {
+      try {
+        await settingsManager.saveSecrets({ openaiApiKey: wizardResult.openaiApiKey });
+      } catch (error) {
+        sessionApiKey = String(wizardResult.openaiApiKey || "");
+        settingsWarnings.push(
+          `${error.message} A chave informada sera usada apenas nesta execucao atual.`
+        );
+      }
+    }
+  };
+
+  if (explicitSetupMode && !isTerminalInteractive(stdin, stdout)) {
+    throw new Error("O modo --setup exige terminal interativo (TTY).");
+  }
+
+  if ((interactiveEnabled && !settingsExists) || explicitSetupMode) {
+    await runWizardAndPersist("first-use", args.get("--profile") || settings.defaultProfileId);
+    if (explicitSetupMode && !interactiveEnabled) {
+      const setupIo = ioFactory();
+      await setupIo.say("Setup concluido com sucesso.");
+      await setupIo.close();
+      return;
+    }
+  }
+
+  let rawProfileId = args.get("--profile") || settings.defaultProfileId || `perfil-${Date.now()}`;
+  let normalizedProfileId = slug(rawProfileId);
+
+  if (interactiveEnabled) {
+    while (true) {
+      const interactive = await runInteractiveShellFn({
+        profileId: normalizedProfileId,
+        baseDir,
+        stdin,
+        stdout,
+      });
+      if (!interactive || interactive.action === "exit") {
+        return;
+      }
+      if (interactive.action === "settings") {
+        await runWizardAndPersist("edit", rawProfileId);
+        rawProfileId = args.get("--profile") || settings.defaultProfileId || rawProfileId;
+        normalizedProfileId = slug(rawProfileId);
+        continue;
+      }
+      applyInteractiveAction(args, interactive.action);
+      break;
+    }
+  }
+
+  rawProfileId = args.get("--profile") || settings.defaultProfileId || rawProfileId;
   const profileId = rawProfileId || `perfil-${Date.now()}`;
-  const normalizedProfileId = slug(profileId);
+  normalizedProfileId = slug(profileId);
+  const io = ioFactory();
   const deepeningMode = Boolean(args.get("--deepening"));
   const statusMode = Boolean(args.get("--status"));
   const resumeMode = Boolean(args.get("--resume"));
@@ -107,15 +224,48 @@ async function runFromCliWithDeps(argv, deps = {}) {
   const journalArg = args.get("--journal");
   const telemetryArg = args.get("--telemetry");
   const exportArg = args.get("--export");
-  const aiProvider = String(args.get("--provider") || process.env.MINDCLONE_AI_PROVIDER || "local");
-  const aiModel = String(args.get("--ai-model") || process.env.MINDCLONE_AI_MODEL || "");
-  const aiApiKey = String(args.get("--ai-key") || process.env.MINDCLONE_AI_API_KEY || "");
+  const interviewModeInput = String(
+    args.get("--interview-mode") || settings.interview?.defaultMode || "adaptive"
+  ).toLowerCase();
+  const interviewMode = interviewModeInput === "phased" ? "phased" : "adaptive";
+  const maxQuestionsInput = Number(
+    args.get("--max-questions") || settings.interview?.maxQuestionsPerSession || 25
+  );
+  const maxQuestions =
+    Number.isFinite(maxQuestionsInput) && maxQuestionsInput > 0
+      ? Math.round(maxQuestionsInput)
+      : 25;
+  let secretsApiKey = "";
+  try {
+    const loadedSecrets = await settingsManager.loadSecrets();
+    secretsApiKey = loadedSecrets.secrets.openaiApiKey;
+  } catch (error) {
+    settingsWarnings.push(error.message);
+  }
+
+  const aiProvider = String(
+    args.get("--provider") || process.env.MINDCLONE_AI_PROVIDER || settings.ai?.provider || "local"
+  );
+  const aiModel = String(
+    args.get("--ai-model") || process.env.MINDCLONE_AI_MODEL || settings.ai?.model || ""
+  );
+  const aiApiKey = String(
+    settingsManager.resolveApiKey({
+      envApiKey: process.env.MINDCLONE_AI_API_KEY,
+      cliApiKey: args.get("--ai-key"),
+      secretsApiKey: sessionApiKey || secretsApiKey,
+    })
+  );
   const aiBaseUrl = String(args.get("--ai-base-url") || process.env.MINDCLONE_AI_BASE_URL || "");
   const aiTimeoutMs = Number(
-    args.get("--ai-timeout") || process.env.MINDCLONE_AI_TIMEOUT_MS || 15000
+    args.get("--ai-timeout") ||
+      process.env.MINDCLONE_AI_TIMEOUT_MS ||
+      settings.ai?.timeoutMs ||
+      15000
   );
-  const aiMaxRetries = Number(args.get("--ai-retries") || process.env.MINDCLONE_AI_RETRIES || 2);
-  const encryptionKey = process.env.MINDCLONE_ENCRYPTION_KEY || "";
+  const aiMaxRetries = Number(
+    args.get("--ai-retries") || process.env.MINDCLONE_AI_RETRIES || settings.ai?.maxRetries || 2
+  );
   const sessionManager = sessionManagerFactory(baseDir, {
     encryptionKey,
     requireEncryption: false,
@@ -143,8 +293,11 @@ async function runFromCliWithDeps(argv, deps = {}) {
 
   await io.say("MindClone CLI");
   await io.say(`Perfil: ${normalizedProfileId}`);
-  await io.say(`Modo: ${deepeningMode ? "deepening" : "faseado"}`);
+  await io.say(`Modo: ${deepeningMode ? "deepening" : interviewMode}`);
   await io.say(`Provider IA: ${aiProvider}`);
+  for (const warning of settingsWarnings) {
+    await io.say(`[Aviso] ${warning}`);
+  }
   if (plugins.length > 0) {
     await io.say(`Plugins carregados: ${plugins.map((item) => item.name).join(", ")}`);
   }
@@ -318,11 +471,13 @@ async function runFromCliWithDeps(argv, deps = {}) {
       profileId: normalizedProfileId,
       baseDir,
       io,
+      maxQuestions,
       requireConsent: true,
       consentSource: "cli",
       encryptionKey,
       requireEncryption: false,
       deepeningMode,
+      interviewMode,
       aiProvider,
       aiModel,
       aiApiKey,
@@ -373,4 +528,5 @@ module.exports = {
   parseArgs,
   slug,
   parseCompareProfileIds,
+  applyInteractiveAction,
 };

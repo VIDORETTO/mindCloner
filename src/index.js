@@ -5,6 +5,7 @@ const { AIClient } = require("./ai/client");
 const { buildSystemPrompt, buildPhasePrompt } = require("./ai/prompt-builder");
 const { selectNextQuestion } = require("./engine/question-engine");
 const { validateQuestionCandidate } = require("./engine/question-validator");
+const { selectAdaptiveQuestion } = require("./ai/adaptive-interview-engine");
 const {
   applyUpdates,
   registerFieldTrace,
@@ -466,6 +467,7 @@ async function runSession({
   aiBaseUrl = process.env.MINDCLONE_AI_BASE_URL || "",
   aiTimeoutMs = Number(process.env.MINDCLONE_AI_TIMEOUT_MS || 15000),
   aiMaxRetries = Number(process.env.MINDCLONE_AI_RETRIES || 2),
+  interviewMode = process.env.MINDCLONE_INTERVIEW_MODE || "phased",
 }) {
   const sessionManager = new SessionManager(baseDir, {
     encryptionKey,
@@ -480,6 +482,8 @@ async function runSession({
     timeoutMs: aiTimeoutMs,
     maxRetries: aiMaxRetries,
   });
+  const normalizedInterviewMode =
+    String(interviewMode || "phased").toLowerCase() === "adaptive" ? "adaptive" : "phased";
   let aiFallbackWarnings = 0;
   const loaded = await sessionManager.loadOrCreate(profileId);
   const { state, profile, tracker, contradictions } = loaded;
@@ -519,6 +523,11 @@ async function runSession({
       contradictions,
     });
   }
+  if (normalizedInterviewMode === "adaptive") {
+    await io.say(
+      "\n[Modo adaptativo] Perguntas dinamicas por lacunas e contradicoes da conversa atual."
+    );
+  }
 
   const sessionLog = [];
   let askedInSession = 0;
@@ -531,7 +540,7 @@ async function runSession({
       break;
     }
 
-    const emptyFields = getEmptyFields(phase.targetFields, profile);
+    let emptyFields = getEmptyFields(phase.targetFields, profile);
     const phaseCompleteness = updateMetaCompleteness(profile, phase.number);
     state.current_phase_progress = Number((phaseCompleteness * 100).toFixed(2));
     state.phases_status[getPhaseKey(phase.number)].score = state.current_phase_progress;
@@ -571,22 +580,46 @@ async function runSession({
 
       phaseTransitioned = true;
       await io.say(phase.transitionMessage);
-      break;
+      if (isLastPhase || normalizedInterviewMode !== "adaptive") {
+        break;
+      }
+      lastEntry = null;
+      continue;
     }
 
-    const question = selectNextQuestion({
-      phase,
-      tracker,
-      emptyFields,
-      lastEntry,
-    });
-    if (!question) {
-      break;
+    let question;
+    let questionPhase = phase;
+    let adaptiveReason = "";
+    if (normalizedInterviewMode === "adaptive") {
+      const adaptiveSelection = selectAdaptiveQuestion({
+        currentPhaseNumber: phase.number,
+        profile,
+        tracker,
+        contradictions,
+        lastEntry,
+      });
+      if (!adaptiveSelection) {
+        break;
+      }
+      question = adaptiveSelection.question;
+      questionPhase = adaptiveSelection.phase;
+      emptyFields = adaptiveSelection.emptyFields;
+      adaptiveReason = adaptiveSelection.reason;
+    } else {
+      question = selectNextQuestion({
+        phase,
+        tracker,
+        emptyFields,
+        lastEntry,
+      });
+      if (!question) {
+        break;
+      }
     }
 
     const aiMessages = contextManager.build({
       systemPrompt: buildSystemPrompt(),
-      phasePrompt: buildPhasePrompt(phase),
+      phasePrompt: buildPhasePrompt(questionPhase),
       profile: compressProfileForContext(profile),
       askedQuestions: tracker.summary(),
       contradictions,
@@ -598,6 +631,8 @@ async function runSession({
       contradictions,
       emptyFields,
       trackerSummary: tracker.summary(),
+      interviewMode: normalizedInterviewMode,
+      adaptiveReason,
     };
     const localQuestionText =
       typeof question.question === "function"
@@ -614,7 +649,7 @@ async function runSession({
       targetField: question.target_field,
       questionType: question.question_type,
       askedQuestions: tracker.summary(),
-      phaseTargetFields: phase.targetFields,
+      phaseTargetFields: questionPhase.targetFields,
       fallbackQuestion: localQuestionText,
     });
     let regenerationAttempt = 0;
@@ -640,7 +675,7 @@ async function runSession({
         targetField: question.target_field,
         questionType: question.question_type,
         askedQuestions: tracker.summary(),
-        phaseTargetFields: phase.targetFields,
+        phaseTargetFields: questionPhase.targetFields,
         fallbackQuestion: localQuestionText,
       });
     }
@@ -652,7 +687,7 @@ async function runSession({
         targetField: question.target_field,
         questionType: question.question_type,
         askedQuestions: tracker.summary(),
-        phaseTargetFields: phase.targetFields,
+        phaseTargetFields: questionPhase.targetFields,
         fallbackQuestion: localQuestionText,
       });
     }
@@ -667,14 +702,19 @@ async function runSession({
       );
     }
 
-    await io.say(`\n[${phase.name}] ${renderProgress(state.current_phase_progress)}`);
+    const modeLabel = normalizedInterviewMode === "adaptive" ? "Adaptativo" : "Faseado";
+    await io.say(
+      `\n[${modeLabel} | ${questionPhase.name}] ${renderProgress(state.current_phase_progress)}`
+    );
     await io.say(questionText);
     const input = (await io.ask("> ")).trim();
     if (input === "/pause") {
       break;
     }
     if (input === "/status") {
-      await io.say(`Progresso atual: ${state.current_phase_progress.toFixed(0)}%`);
+      await io.say(
+        `Progresso atual: ${state.current_phase_progress.toFixed(0)}% | Modo: ${modeLabel}`
+      );
       continue;
     }
     if (input === "/skip") {
@@ -687,7 +727,7 @@ async function runSession({
       const risk = detectCrisisRisk(input);
       if (risk.detected) {
         const event = createCrisisEvent({
-          phaseNumber: phase.number,
+          phaseNumber: questionPhase.number,
           questionId: question.id,
           userInput: input,
           risk,
@@ -728,22 +768,22 @@ async function runSession({
 
     const updates = question.mapper(input, profile, questionContext);
     applyUpdates(profile, updates, {
-      phaseNumber: phase.number,
+      phaseNumber: questionPhase.number,
       questionId: question.id,
       questionType: question.question_type,
       targetField: question.target_field,
       answer: input,
     });
-    if (phase.number === 9 && phase.emotionalValidationMessage) {
-      await io.say(phase.emotionalValidationMessage);
+    if (questionPhase.number === 9 && questionPhase.emotionalValidationMessage) {
+      await io.say(questionPhase.emotionalValidationMessage);
     }
-    if (typeof phase.detectContradictions === "function") {
-      const found = phase.detectContradictions({
+    if (typeof questionPhase.detectContradictions === "function") {
+      const found = questionPhase.detectContradictions({
         question,
         answer: input,
         profile,
       });
-      addContradictions(contradictions, found, phase.number);
+      addContradictions(contradictions, found, questionPhase.number);
     }
     askedInSession += 1;
     state.total_questions += 1;
@@ -751,7 +791,7 @@ async function runSession({
 
     const questionRecord = {
       id: createQuestionId(state.total_questions),
-      phase: phase.number,
+      phase: questionPhase.number,
       session: profile.meta.total_sessions + 1,
       question_text: questionText,
       target_field: question.target_field,
@@ -763,6 +803,7 @@ async function runSession({
     lastEntry = {
       ...questionRecord,
       id: question.id,
+      allow_followup: Boolean(question.allow_followup),
     };
 
     sessionLog.push({ role: "assistant", content: questionText });
@@ -782,10 +823,12 @@ async function runSession({
 
   const lastPhaseNumber = getMaxPhaseNumber();
   const summaryPhaseNumber =
-    phaseTransitioned &&
-    !(state.current_phase === lastPhaseNumber && state.current_phase_progress === 100)
-      ? Math.max(1, state.current_phase - 1)
-      : state.current_phase;
+    normalizedInterviewMode === "adaptive"
+      ? state.current_phase
+      : phaseTransitioned &&
+          !(state.current_phase === lastPhaseNumber && state.current_phase_progress === 100)
+        ? Math.max(1, state.current_phase - 1)
+        : state.current_phase;
   const summaryScore =
     state.phases_status[getPhaseKey(summaryPhaseNumber)]?.score || state.current_phase_progress;
   const summary = buildPhaseSummary(profile, summaryPhaseNumber, summaryScore);
@@ -793,6 +836,7 @@ async function runSession({
     phaseTransitioned,
     abortedByConsent: false,
     abortedBySafety: false,
+    interviewMode: normalizedInterviewMode,
     state,
     profile,
     summary,

@@ -4,7 +4,8 @@
   "private": true,
   "description": "MindClone CLI - plataforma completa de mapeamento em 10 fases com operacao avancada",
   "bin": {
-    "mindclone": "./bin/mindclone.js"
+    "mindclone": "./bin/mindclone.js",
+    "mindcloner": "./bin/mindclone.js"
   },
   "scripts": {
     "start": "node ./bin/mindclone.js",
@@ -24,5 +25,8 @@
     "globals": "^17.4.0",
     "prettier": "^3.8.1",
     "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "enquirer": "^2.4.1"
   }
 }

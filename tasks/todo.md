@@ -1,339 +1,264 @@
-# Plano de Execucao - MindCloner
+# TODO - Execucao Faseada da CLI Dinamica MindCloner
 
 Ultima atualizacao: 2026-03-04
 Responsavel atual: Codex
-Status geral: Execucao avancada (P0-P2 concluidos, P3 entregue + P3.5 receitas praticas de operacao)
+Status geral: Execucao em andamento (F0, F2 e F3 concluidas; F1 smoke manual pendente; F4-F7 pendentes)
+Referencia principal: `tasks/plano-cli-entrevista-dinamica.md`
+Arquivo historico anterior: `tasks/todo-archive-2026-03-04.md`
 
 ## 1) Objetivo deste arquivo
 
-- Ser a fonte unica de verdade para execucao tecnica.
-- Manter backlog priorizado por risco, impacto e dependencia.
-- Registrar criterios de aceite e evidencias de verificacao.
-- Permitir continuidade de trabalho sem perda de contexto.
+- Centralizar somente o backlog ativo e executavel.
+- Organizar o trabalho por fases de entrega (F0 a F7).
+- Mostrar criterio de aceite e verificacao de cada fase.
+- Referenciar explicitamente as secoes do plano tecnico mestre.
 
-## 2) Snapshot atual do projeto
+## 2) Snapshot atual
 
-- [x] CLI funcional com fluxo por fases 1-10.
-- [x] Persistencia local com hardening (backup/rollback/recuperacao) implementada.
-- [x] Testes E2E por fase existentes (`test/phase1..10.e2e.test.js`).
-- [x] Deepening continuo pos-fase 10 implementado (`--deepening`).
-- [x] Protocolo de seguranca emocional implementado.
-- [x] Criptografia de dados em repouso implementada.
-- [x] Exportacoes avancadas e operacao completa de CLI implementadas.
-- [x] Anti-alucinacao com rastreabilidade de origem/confiança implementado.
-- [x] Suporte inicial a LLM local via provider `ollama` implementado.
-- [x] README operacional com modos avancados e exemplos validos publicado.
-- [x] README detalhado para iniciantes com troubleshooting passo a passo publicado.
-- [x] README com secoes de receitas prontas por objetivo operacional publicado.
+- [x] Plano completo publicado em `tasks/plano-cli-entrevista-dinamica.md`.
+- [x] Backlog antigo arquivado em `tasks/todo-archive-2026-03-04.md`.
+- [x] Implementacao do novo escopo iniciada.
 
-## 3) Regras de execucao (Definition of Ready / Done)
+## 3) Regras de execucao (Ready / Done)
 
-### Ready (antes de desenvolver)
+### Ready (antes de implementar fase)
 
-- [ ] Escopo fechado em 1 frase objetiva.
-- [ ] Dependencias mapeadas (arquivos, modulos e comandos afetados).
-- [ ] Criterio de aceite mensuravel definido.
-- [ ] Risco principal identificado e mitigacao planejada.
+- [ ] Escopo da fase validado em 1 frase.
+- [ ] Dependencias de codigo mapeadas (arquivos/modulos).
+- [ ] Criterio de aceite objetivo definido.
+- [ ] Risco principal da fase com mitigacao definida.
 
-### Done (antes de marcar concluido)
+### Done (antes de marcar fase concluida)
 
-- [ ] Implementacao finalizada sem workaround temporario.
-- [ ] Testes automatizados relevantes executados com sucesso.
-- [ ] Comportamento validado manualmente na CLI quando aplicavel.
-- [ ] Documentacao/README/TODO atualizados.
-- [x] Secao "Revisao da entrega" preenchida neste arquivo.
+- [ ] Codigo implementado sem workaround temporario.
+- [ ] Testes relevantes executados com sucesso.
+- [ ] Smoke manual realizado quando aplicavel.
+- [ ] Documentacao atualizada (`README.md` e este `tasks/todo.md`).
 
-## 4) Roadmap priorizado
+## 4) Fases e tasks (backlog principal)
 
-## P0 - Critico (seguranca, confiabilidade e compliance)
+### F0 - Preparacao tecnica e alinhamento
 
-### P0.1 Consentimento informado obrigatorio
+Referencias no plano:
 
-- [x] Exibir termo antes de iniciar coleta.
-- [x] Exigir aceite explicito para continuar.
-- [x] Persistir `consent.accepted_at`, `consent.version`, `consent.source`.
-- Criterio de aceite: sem aceite, o fluxo nao inicia.
-- Verificacao: teste E2E cobrindo aceite e rejeicao.
+- Secao 6) Arquitetura tecnica alvo
+- Secao 9) F0 - Preparacao tecnica
+- Secao 16) Decisoes travadas para simplificar o escopo inicial
 
-### P0.2 Protocolo de crise emocional
+Tasks:
 
-- [x] Detectar sinais de risco por regras/padroes definidos.
-- [x] Interromper aprofundamento automaticamente quando risco alto.
-- [x] Exibir orientacao segura e registrar evento em sessao.
-- Criterio de aceite: entrada de risco aciona bloqueio e mensagem segura.
-- Verificacao: teste E2E com frases gatilho e assert de interrupcao.
+- [x] F0.1 Fechar decisao da lib de UI TTY (`@inquirer/prompts` ou `enquirer`).
+- [x] F0.2 Definir contrato unico de estado da UI (router de telas + contexto global).
+- [x] F0.3 Definir formato final de `settings.json` e estrategia de segredo da API key.
+- [x] F0.4 Registrar decisoes em ADR curta dentro de `tasks/`.
 
-### P0.3 Criptografia local de dados sensiveis
+Criterio de aceite:
 
-- [x] Criptografar `state`, `sessions` e `mind-profile` em repouso.
-- [x] Implementar gestao de chave via ambiente/secret local.
-- [x] Garantir leitura/escrita transparente para o app.
-- Criterio de aceite: arquivos sensiveis nao legiveis sem chave valida.
-- Verificacao: teste de roundtrip + falha com chave invalida.
+- [x] Documento tecnico da fase aprovado e sem pontos abertos criticos.
 
-## P1 - Alto impacto de produto
+Verificacao:
 
-### P1.1 Deepening continuo (`--deepening`)
+- [x] Revisao tecnica do desenho antes de iniciar F1.
+- Evidencia: `tasks/adr-0001-f0-cli-dinamica-foundation.md`.
 
-- [x] Implementar motor de lacunas, contradicoes e refinamento.
-- [x] Reusar historico sem duplicar perguntas.
-- [x] Atualizar score de completude e confianca por iteracao.
-- Criterio de aceite: nova sessao melhora perfil sem regressao.
+### F1 - Shell interativo com setas (menu principal)
 
-### P1.2 Integracao real de providers de IA
+Referencias no plano:
 
-- [x] Suportar OpenAI e Anthropic por configuracao.
-- [x] Implementar retries com backoff e timeout.
-- [x] Definir fallback seguro quando provider indisponivel.
-- Criterio de aceite: troca de provider sem alterar fluxo principal.
+- Secao 4.1) Entrada e bootstrap da CLI
+- Secao 4.2) Menu principal com setas
+- Secao 6.2) `src/cli/tui-shell.js` e `src/cli/screen-router.js`
+- Secao 9) F1 - Shell interativo com setas
+- Secao 10) Plataforma CLI
 
-### P1.3 Validador de perguntas
+Tasks:
 
-- [x] Bloquear repeticao, ambiguidade e baixa especificidade.
-- [x] Garantir pergunta mapeada para campo alvo do schema.
-- [x] Regenerar pergunta automaticamente em caso de invalidacao.
-- Criterio de aceite: perguntas invalidas nao chegam ao usuario final.
+- [x] F1.1 Criar `src/cli/tui-shell.js` com navegacao por setas e atalhos (`Enter`, `Esc`, `?`).
+- [x] F1.2 Criar `src/cli/screen-router.js` com estados: Home, Entrevista, Documentos, Configuracoes, Diagnostico, Sair.
+- [x] F1.3 Integrar novo shell ao entrypoint preservando fallback do fluxo atual.
+- [x] F1.4 Exibir help contextual da opcao selecionada no menu principal.
 
-#### Plano de implementacao P1.3 (execucao atual)
+Criterio de aceite:
 
-- [x] Criar validador central de pergunta (`src/engine/question-validator.js`) com regras de repeticao, ambiguidade, especificidade e mapeamento de schema.
-- [x] Integrar validacao no `runSession` antes de exibir pergunta, com regeneracao automatica via IA e fallback seguro.
-- [x] Cobrir regras com testes unitarios de validador e teste de integracao da regeneracao.
-- [x] Executar suite de testes e registrar revisao da entrega deste ciclo.
+- [x] Usuario navega no menu principal sem digitar comandos manuais.
 
-### P1.4 Anti-alucinacao reforcado
+Verificacao:
 
-- [x] Classificar origem dos dados: `fato`, `auto_relato`, `inferencia`.
-- [x] Persistir `confidenceScore` por bloco do perfil.
-- [x] Evitar escrita de inferencia como fato confirmado.
-- Criterio de aceite: toda entrada no perfil possui rastreabilidade.
+- [x] Teste de integracao de transicao entre telas.
+- [ ] Smoke manual no PowerShell.
 
-#### Plano de implementacao P1.4 (execucao atual)
+### F2 - Setup inicial e configuracoes guiadas
 
-- [x] Estender metadados do perfil para armazenar rastreabilidade por campo (`source_type`, `confirmed`, `confidence_score`, contexto da pergunta) e agregacao de `confidenceScore` por bloco.
-- [x] Integrar rastreabilidade no `applyUpdates` e no fluxo de deepening para garantir cobertura de escrita em todos os caminhos.
-- [x] Ajustar classificacao de origem (`fato`, `auto_relato`, `inferencia`) com regra para inferencia nao-confirmada.
-- [x] Cobrir com testes (unitario + E2E) e atualizar revisao no `tasks/todo.md`.
+Referencias no plano:
 
-## P2 - Operacao e interoperabilidade
+- Secao 4.3) Setup inicial guiado
+- Secao 4.8) Configuracoes em menu
+- Secao 6.2) `src/config/settings-manager.js` e `src/config/settings-schema.js`
+- Secao 7.1) Contrato `settings.json`
+- Secao 9) F2 - Setup e configuracao guiada
+- Secao 10) Configuracao e onboarding
 
-### P2.1 Exportacoes profissionais
+Tasks:
 
-- [x] Implementar `--export` para `json`, `markdown`, `summary`, `rag-chunks`.
-- [x] Padronizar pasta de saida (`exports/<userId>/`).
-- [x] Validar schema antes de exportar.
-- Criterio de aceite: multiplos formatos gerados com consistencia.
+- [x] F2.1 Criar `src/config/settings-schema.js` com defaults seguros.
+- [x] F2.2 Criar `src/config/settings-manager.js` para carregar/salvar config local.
+- [x] F2.3 Implementar wizard de primeiro uso para perfil padrao, `baseDir`, API key e consentimento.
+- [x] F2.4 Trancar provider/modelo inicial em OpenAI `gpt-5-mini-2025-08-07`.
+- [x] F2.5 Implementar tela de configuracoes editavel no menu.
 
-#### Plano de implementacao P2.1 (execucao atual)
+Criterio de aceite:
 
-- [x] Criar motor de exportacao com validacao de schema e formatos `json`, `markdown`, `summary`, `rag-chunks`.
-- [x] Integrar comando `--export` no CLI, aceitando multiplos formatos e mantendo execucao padrao.
-- [x] Garantir saida padronizada em `exports/<userId>/` com nomes de arquivo deterministas.
-- [x] Cobrir com testes automatizados de exportador e fluxo de CLI + atualizar revisao do ciclo.
+- [x] Usuario novo inicia entrevista sem precisar passar flags de CLI.
 
-### P2.2 Comandos operacionais de CLI
+Verificacao:
 
-- [x] Implementar/estabilizar `--resume`, `--status`, `--export`.
-- [x] Garantir idempotencia nas retomadas.
-- [x] Melhorar mensagens de erro orientadas a acao.
-- Criterio de aceite: ciclo completo sem edicao manual de arquivos.
+- [x] Teste unitario de validacao de config.
+- [x] Teste de primeiro uso (config inexistente -> wizard -> menu).
 
-#### Plano de implementacao P2.2 (execucao atual)
+### F3 - Entrevista em dois modos (faseado + adaptativo)
 
-- [x] Introduzir modo de status somente leitura (`--status`) sem iniciar entrevista.
-- [x] Garantir retomada controlada (`--resume`) apenas para perfis existentes e com mensagens acionaveis.
-- [x] Reforcar idempotencia operacional de retomada usando `profileId` canonico.
-- [x] Cobrir fluxo com testes de CLI para status, resume, export em status e falha orientada.
+Referencias no plano:
 
-### P2.3 Hardening de persistencia
+- Secao 4.4) Modos de entrevista
+- Secao 6.2) `src/ai/adaptive-interview-engine.js`
+- Secao 9) F3 - Entrevista em 2 modos
+- Secao 10) Entrevista IA
+- Secao 13) Riscos (alucinacao em modo adaptativo)
 
-- [x] Cobrir corrupcao parcial de arquivo.
-- [x] Implementar estrategia de backup/rollback atomico.
-- [x] Validar recuperacao de sessao apos falhas de I/O.
-- Criterio de aceite: sistema recupera estado sem perda critica.
+Tasks:
 
-#### Plano de implementacao P2.3 (execucao atual)
+- [x] F3.1 Integrar modo faseado existente no novo shell de entrevista.
+- [x] F3.2 Implementar `src/ai/adaptive-interview-engine.js` com perguntas baseadas em lacunas/contradicoes.
+- [x] F3.3 Reusar `question-validator` para validar perguntas adaptativas antes de exibir.
+- [x] F3.4 Exibir progresso e resumo de sessao nos dois modos.
+- [x] F3.5 Garantir persistencia continua sem quebrar estado existente.
 
-- [x] Reforcar `LocalStore` com escrita segura (arquivo temporario + backup + promote) e rollback automatico.
-- [x] Implementar recuperacao de leitura via backup para casos de arquivo ausente/corrompido.
-- [x] Criar testes E2E simulando corrupcao parcial e interrupcao de I/O durante persistencia.
-- [x] Rodar suite completa e atualizar revisao no `tasks/todo.md`.
+Criterio de aceite:
 
-## P3 - Backlog estrategico
+- [x] Ambos os modos funcionam com persistencia e atualizacao de completude.
 
-- [x] Suporte a LLM local (`ollama`).
-- [x] Modo espelho (`--mirror`).
-- [x] Modo diario (`--journal`).
-- [x] Importacao externa (`--import`).
-- [x] Comparacao de perfis (`--compare`).
-- [x] Sistema de plugins.
-- [x] Telemetria anonimizada opt-in.
-- [x] Documentacao operacional avancada (`README.md`).
-- [x] Documentacao detalhada didatica + troubleshooting (`README.md`).
-- [x] Receitas praticas de uso (`README.md`).
+Verificacao:
 
-#### Plano de implementacao P3.1 (execucao atual)
+- [x] Teste de integracao para troca de modo.
+- [x] Smoke de sessao curta em cada modo.
 
-- [x] Implementar provider `ollama` no `AIClient` com endpoint local configuravel e parse de resposta.
-- [x] Integrar configuracao no fluxo (`runSession` + CLI) via `--ai-base-url` e `MINDCLONE_AI_BASE_URL`.
-- [x] Cobrir com testes unitarios de sucesso/falha/fallback do provider local.
-- [x] Rodar suite de testes e atualizar revisao do ciclo.
+### F4 - Handoff de agente (`/save` e `/new`)
 
-#### Plano de implementacao P3.2 (execucao atual)
+Referencias no plano:
 
-- [x] Implementar modos CLI `--mirror`, `--journal`, `--import` e `--compare` com comportamento deterministico e mensagens acionaveis.
-- [x] Implementar sistema de plugins por caminho (`--plugin`) com hooks de eventos e isolamento de falhas.
-- [x] Implementar telemetria anonimizada opt-in (`--telemetry on|off|status`) e coleta somente com consentimento.
-- [x] Cobrir novos fluxos com testes automatizados e validar nao regressao.
-- [x] Rodar `npm test`, smoke da CLI e registrar revisao do ciclo.
+- Secao 4.5) Comandos em tempo real durante entrevista
+- Secao 4.6) Fluxo anti-alucinacao com handoff
+- Secao 6.2) `src/cli/commands.js` e `src/ai/handoff-manager.js`
+- Secao 7.2) Contrato `handoff-<timestamp>.json`
+- Secao 9) F4 - Comandos `/save` e `/new`
+- Secao 10) Handoff de agente
 
-#### Plano de implementacao P3.3 (execucao atual)
+Tasks:
 
-- [x] Fechar escopo em uma frase: documentar operacao avancada da CLI para reduzir ambiguidade de uso em producao.
-- [x] Mapear dependencias de documentacao: flags reais em `src/cli/menu.js`, scripts em `package.json`, cobertura de testes em `test/cli-ops.test.js` e `test/cli-p3.test.js`.
-- [x] Publicar `README.md` com setup, fluxo basico, modos avancados, plugins, telemetria, exportacao, variaveis de ambiente e criptografia.
-- [x] Validar coerencia operacional por testes automatizados e smoke dos fluxos documentados.
+- [ ] F4.1 Criar `src/cli/commands.js` com parser para `/help`, `/status`, `/save`, `/new`, `/pause`, `/menu`.
+- [ ] F4.2 Criar `src/ai/handoff-manager.js` para gerar e carregar snapshots de continuidade.
+- [ ] F4.3 Implementar comportamento `/save` no loop de entrevista.
+- [ ] F4.4 Implementar comportamento `/new` iniciando sessao nova com contexto salvo.
+- [ ] F4.5 Persistir historico de handoffs por perfil com timestamp.
 
-#### Plano de implementacao P3.4 (execucao atual)
+Criterio de aceite:
 
-- [x] Expandir `README.md` para linguagem simples, didatica e orientada a iniciantes.
-- [x] Adicionar guias passo a passo de primeiro uso, comandos principais e explicacao de quando usar cada modo.
-- [x] Adicionar troubleshooting detalhado com causas e correcao para erros reais da CLI (criptografia, perfil nao encontrado, plugin invalido, telemetry invalido).
-- [x] Validar comandos documentados por smoke no terminal e atualizar revisao deste ciclo.
+- [ ] Fluxo `/save` -> `/new` preserva contexto e reinicia sessao de agente.
 
-#### Plano de implementacao P3.5 (execucao atual)
+Verificacao:
 
-- [x] Adicionar secao de "receitas prontas" por objetivo no `README.md`.
-- [x] Cobrir fluxos chave: onboarding rapido, retomada, diagnostico, comparacao, export para RAG, telemetria e criptografia.
-- [x] Garantir formato copia-e-cola com comandos em sequencia.
-- [x] Validar coerencia das receitas com smoke e registrar revisao.
+- [ ] Teste E2E dedicado ao handoff.
+- [ ] Confirmacao de arquivo de handoff criado e reutilizado.
 
-## 5) Plano de execucao em ciclos
+### F5 - Geracao de documento no menu
 
-- [x] Ciclo 1: fechar P0 completo com testes.
-- [x] Ciclo 2: entregar P1.1 + P1.2 + P1.3.
-- [x] Ciclo 3: concluir P1.4 + P2.1 + P2.2.
-- [x] Ciclo 4: P2.3 + backlog P3 conforme capacidade.
-- [x] Ciclo 5: P3.3 documentacao operacional avancada.
-- [x] Ciclo 6: P3.4 documentacao detalhada para iniciantes + troubleshooting.
-- [x] Ciclo 7: P3.5 receitas praticas por objetivo.
+Referencias no plano:
 
-## 6) Quadro de verificacao
+- Secao 4.7) Geracao de documento pela propria CLI
+- Secao 6.2) `src/profile/context-pack-exporter.js`
+- Secao 9) F5 - Gerador de documento no menu
+- Secao 10) Documentos e exportacao
 
-- [x] Rodar testes: `npm test`.
-- [x] Rodar smoke da CLI: `node bin/mindclone.js`.
-- [x] Validar nao regressao de fases 1-10.
-- [x] Revisar logs de erro e cobertura minima relevante.
+Tasks:
 
-## 6.1) Plano de execucao do ciclo atual (pronto para producao)
+- [ ] F5.1 Implementar tela `Gerar documento` com selecao por setas.
+- [ ] F5.2 Criar `src/profile/context-pack-exporter.js` para preset "Resumo para IA".
+- [ ] F5.3 Integrar presets existentes (`json`, `markdown`, `summary`, `rag-chunks`).
+- [ ] F5.4 Exibir caminho de saida e resultado final da exportacao.
 
-- [x] Criar pipeline de CI em `.github/workflows/ci.yml` executando install, lint, typecheck e testes.
-- [x] Adicionar padrao de qualidade local (`eslint`, `prettier`, `typescript`) com scripts de verificacao no `package.json`.
-- [x] Adicionar arquivos de governanca minima: `LICENSE`, `CONTRIBUTING.md` e `SECURITY.md`.
-- [x] Criar `tasks/lessons.md` com regras de prevencao e aprendizado operacional.
-- [x] Atualizar metadados do pacote para refletir estado real do projeto.
-- [x] Validar tudo via comandos locais e registrar evidencias em "Revisao da entrega".
+Criterio de aceite:
 
-## 6.2) Plano de execucao do ciclo atual (README completo + publicacao)
+- [ ] Usuario exporta documentos sem usar flags de linha de comando.
 
-- [x] Reescrever `README.md` para explicar objetivo, funcionamento interno e valor do projeto em linguagem simples.
-- [x] Publicar instalacao e uso passo a passo detalhado (setup, primeira execucao, retomada, exportacao e modos avancados).
-- [x] Incluir troubleshooting, FAQ e glossario rapido para iniciantes.
-- [x] Validar qualidade com `npm run format:check` e `npm run verify`.
-- [x] Realizar commit e push no GitHub remoto `origin/master`.
+Verificacao:
 
-## 6.3) Plano de execucao do ciclo atual (erro de chave de criptografia)
+- [ ] Teste de integracao do menu de export.
+- [ ] Verificacao de arquivos gerados no diretorio correto.
 
-- [x] Corrigir mensagem de erro da CLI para refletir quando `MINDCLONE_ENCRYPTION_KEY` e obrigatoria em perfil criptografado.
-- [x] Atualizar `README.md` com secao explicita do erro reportado e passos de resolucao por cenario.
-- [x] Atualizar `tasks/lessons.md` com o aprendizado sobre mensagens de erro e documentacao orientada ao sintoma.
-- [x] Validar com `npm run format:check` e `npm test`.
+### F6 - QA, hardening e compatibilidade
 
-## 6.4) Plano de execucao do ciclo atual (onboarding + workflow interativo)
+Referencias no plano:
 
-- [x] Reestruturar `README.md` para destacar onboarding guiado de primeira execucao ate operacao diaria.
-- [x] Documentar o workflow interativo completo da CLI (entrevista, comandos em tempo real, retomada, deepening e export).
-- [x] Explicar objetivamente por que a configuracao e o uso ficaram mais simples (padroes, comandos copia-e-cola e fluxo incremental).
-- [x] Validar consistencia com `npm exec -- prettier --check --end-of-line auto README.md tasks/todo.md` e registrar revisao deste ciclo.
+- Secao 5) Requisitos nao funcionais
+- Secao 9) F6 - QA, hardening e compatibilidade
+- Secao 11) Estrategia de testes e verificacao
+- Secao 13) Riscos principais e mitigacoes
+- Secao 14) Definicao de pronto para release
 
-## 6.5) Plano de execucao do ciclo atual (onboarding sem bloqueio por criptografia)
+Tasks:
 
-- [x] Ajustar `src/cli/menu.js` para nao exigir criptografia obrigatoria na sessao padrao de primeiro uso.
-- [x] Melhorar mensagem de erro para perfil criptografado sem chave, com instrucao direta de recomeco por `--profile` novo.
-- [x] Atualizar onboarding no `README.md` para usar `--profile` unico e evitar colisao com dados antigos.
-- [x] Cobrir regressao em `test/cli-ops.test.js` validando `requireEncryption: false` no fluxo padrao.
-- [x] Validar com `npm test`.
+- [ ] F6.1 Cobrir novos modulos com testes unitarios.
+- [ ] F6.2 Cobrir fluxo TTY e non-TTY sem regressao dos testes atuais.
+- [ ] F6.3 Revisar mensagens de erro para padrao "causa + acao recomendada".
+- [ ] F6.4 Validar recuperacao de falhas de I/O e consistencia de persistencia.
+- [ ] F6.5 Rodar `npm run verify` e corrigir regressao restante.
 
-## 7) Revisao da entrega (preencher a cada ciclo)
+Criterio de aceite:
 
-### Ciclo atual
+- [ ] Suite automatizada verde e smoke manual aprovado no PowerShell.
 
-- Escopo executado: correcao do onboarding para impedir bloqueio no primeiro uso por exigencia de criptografia, com melhora de mensagem orientada para recomeco.
-- Resultado objetivo: permitir primeira execucao sem `MINDCLONE_ENCRYPTION_KEY` e reduzir friccao quando houver perfil antigo criptografado.
-- Evidencias (testes/comandos): `npm test` (ok).
-- Riscos remanescentes: perfis ja criptografados continuam exigindo a chave original para leitura, por limite tecnico do modelo de criptografia.
-- Proxima acao recomendada: adicionar comando `--doctor` para detectar automaticamente perfil criptografado sem chave e oferecer roteiro de recuperacao.
+Verificacao:
 
-### Ciclo anterior
+- [ ] `npm run verify` ok.
+- [ ] Smoke de onboarding, entrevista, `/save`/`/new` e export ok.
 
-- Escopo executado: atualizacao completa do README com onboarding guiado e explicacao do workflow interativo ponta a ponta.
-- Resultado objetivo: reduzir friccao de setup e tornar o uso diario previsivel com comandos copia-e-cola e fluxo incremental.
-- Evidencias (testes/comandos): `npm exec -- prettier --check --end-of-line auto README.md tasks/todo.md` (ok).
-- Riscos remanescentes: o comando `npm run format:check` segue inconsistente neste ambiente Windows para o binario `prettier`, apesar de `npm exec prettier` funcionar.
-- Proxima acao recomendada: ajustar a estrategia de format check no projeto para evitar dependencia do PATH local do shell em Windows.
+### F7 - Documentacao de produto e release
 
-### Ciclo anterior
+Referencias no plano:
 
-- Escopo executado: correcao de mensagem de erro de criptografia + troubleshooting explicito no README para o sintoma reportado.
-- Resultado objetivo: reduzir ambiguidade operacional quando perfil existente esta criptografado e a chave nao foi informada.
-- Evidencias (testes/comandos): `npm run format:check` (ok); `npm test` (49/49 passando).
-- Riscos remanescentes: o usuario ainda depende de guardar a chave original para reabrir dados criptografados antigos.
-- Proxima acao recomendada: adicionar comando de diagnostico (`--doctor`) para detectar automaticamente falta de chave e sugerir acao guiada.
+- Secao 9) F7 - Documentacao de produto
+- Secao 11) Estrategia de testes e verificacao
+- Secao 14) Definicao de pronto para release
+- Secao 15) Cronograma sugerido
 
-### Ciclo anterior
+Tasks:
 
-- Escopo executado: reescrita completa do README com onboarding didatico e operacao fim-a-fim para iniciantes.
-- Resultado objetivo: permitir que qualquer pessoa entenda o projeto, instale e use sem contexto previo.
-- Evidencias (testes/comandos): `npm run format:check` (ok); `npm run verify` (lint + typecheck + testes, 49/49 passando).
-- Riscos remanescentes: exemplos de comandos precisam ser mantidos sincronizados quando novas flags forem adicionadas.
-- Proxima acao recomendada: gerar uma versao curta do README para "quickstart em 60 segundos" com link para o guia completo.
+- [ ] F7.1 Atualizar `README.md` com onboarding da nova UX de menu.
+- [ ] F7.2 Documentar comandos slash e fluxo anti-alucinacao.
+- [ ] F7.3 Documentar menu de configuracoes e export de documentos.
+- [ ] F7.4 Adicionar guia rapido para usuario final (passo a passo).
+- [ ] F7.5 Registrar evidencias finais da release neste arquivo.
 
-### Ciclo anterior
+Criterio de aceite:
 
-- Escopo executado: hardening de pronto para producao com CI, quality gates e governanca minima.
-- Resultado objetivo: tornar o projeto verificavel em PR/push e operacionalmente auditavel para colaboracao externa.
-- Evidencias (testes/comandos): `npm run verify` (lint + typecheck + testes, 49/49 passando); `npm install --save-dev eslint @eslint/js globals prettier typescript`.
-- Riscos remanescentes: baseline de lint esta permissivo (`no-empty`/`no-unused-vars` off) e pode ser endurecido por fases sem quebrar backlog atual.
-- Proxima acao recomendada: adicionar regras gradativas por pasta (`src/` mais estrito que `test/`) e gate de `npm run format:check` no CI.
+- [ ] Usuario novo conclui setup e uso basico sem suporte tecnico.
 
-### Ciclo anterior
+Verificacao:
 
-- Escopo executado: P3.5 receitas prontas por objetivo para uso diario da CLI.
-- Resultado objetivo: reduzir friccao operacional com comandos copia-e-cola para cenarios comuns.
-- Evidencias (testes/comandos): smoke `node bin/mindclone.js --baseDir <tmp> --profile ana-silva --journal "Inicio de mapeamento" --journal-tags onboarding,inicio`; smoke `node bin/mindclone.js --baseDir <tmp> --profile ana-silva --status`; smoke `node bin/mindclone.js --baseDir <tmp> --telemetry on`; smoke `node bin/mindclone.js --baseDir <tmp> --telemetry status`.
-- Riscos remanescentes: receitas dependem de manutencao quando novos flags/cenarios forem introduzidos.
-- Proxima acao recomendada: adicionar uma tabela "comando -> quando usar -> saida esperada" para consulta rapida.
+- [ ] Revisao final de docs + smoke de comandos documentados.
 
-### Ciclo anterior (P3.4)
+## 5) Ordem de execucao (gates)
 
-- Escopo executado: P3.4 documentacao detalhada para iniciantes com troubleshooting operacional.
-- Resultado objetivo: README autoexplicativo para qualquer pessoa usar a CLI do zero ao avancado sem depender de contexto previo.
-- Evidencias (testes/comandos): smoke `node bin/mindclone.js --baseDir <tmp> --profile smoke-doc-2 --journal "entrada teste"`; smoke `node bin/mindclone.js --baseDir <tmp> --profile smoke-doc-2 --status`; smoke `node bin/mindclone.js --baseDir <tmp> --telemetry status`; revisao cruzada das flags com `src/cli/menu.js`.
-- Riscos remanescentes: exemplos precisam ser mantidos sincronizados se novas flags/eventos forem adicionados.
-- Proxima acao recomendada: criar secao de "receitas" por objetivo (onboarding rapido, diagnostico, export para RAG).
+- [x] Gate 1: F0 concluida.
+- [ ] Gate 2: F1 + F2 concluidas (UI base + setup guiado).
+- [ ] Gate 3: F3 + F4 concluidas (entrevista + handoff).
+- [ ] Gate 4: F5 concluida (documentos por menu).
+- [ ] Gate 5: F6 + F7 concluidas (qualidade + docs + release).
 
-### Ciclo anterior (P3.3)
+## 6) Revisao da entrega (ciclo atual)
 
-- Escopo executado: P3.3 documentacao operacional avancada da CLI.
-- Resultado objetivo: guia unico de operacao com exemplos prontos para todos os modos entregues em P2/P3.
-- Evidencias (testes/comandos): `npm test` (49/49 passando); smoke `node bin/mindclone.js --baseDir <tmp> --profile smoke-doc-user --journal "registro inicial"`; smoke `node bin/mindclone.js --baseDir <tmp> --profile smoke-doc-user --status`; smoke `node bin/mindclone.js --baseDir <tmp> --telemetry status`.
-- Riscos remanescentes: documentacao depende de manter exemplos sincronizados com mudancas futuras de flags.
-- Proxima acao recomendada: adicionar secao de troubleshooting com erros comuns (criptografia, perfil inexistente, plugin invalido).
-
-### Ciclo historico (P3.2 e anteriores)
-
-- Escopo executado: P0 completo + P1 completo + P2 completo + P3.1 + P3.2 (mirror, journal, import, compare, plugins, telemetria opt-in).
-- Resultado objetivo: backlog estrategico P3 implementado em CLI com operacao deterministica, extensibilidade por plugins e coleta telemetrica sob consentimento explicito.
-- Evidencias (testes/comandos): `npm test` (48/48 passando); smoke CLI via `node bin/mindclone.js --baseDir <tmp> --profile smoke-user-a1 --status`; varredura de logs (`rg --files -g "*.log" .`) sem arquivos de erro no repositorio.
-- Riscos remanescentes: sem riscos criticos identificados neste ciclo; manter monitoramento de UX em automacao CLI.
-- Proxima acao recomendada: evoluir documentacao de uso avancado dos novos modos (`--mirror`, `--journal`, `--import`, `--compare`, `--plugin`, `--telemetry`).
+- Escopo executado: entrega da F3 com modo adaptativo integrado ao `runSession`, motor `adaptive-interview-engine`, selecao de modo via config/flag e validacao anti-alucinacao preservada.
+- Resultado objetivo: dois modos operacionais (`phased` e `adaptive`) funcionando no mesmo fluxo com persistencia e transicao de fases no modo adaptativo.
+- Evidencias: `src/ai/adaptive-interview-engine.js`; integracoes em `src/index.js`, `src/cli/menu.js`, `src/cli/setup-wizard.js`; testes `test/adaptive-interview.e2e.test.js` e `test/cli-tui.test.js`; `npm run verify` (ok, 65/65).
+- Risco remanescente: smoke manual no PowerShell continua pendente para fechamento formal da F1 (UX TTY real).
+- Proxima acao recomendada: iniciar F4 (`/save` + `/new` + handoff manager).
