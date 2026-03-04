@@ -2,7 +2,7 @@
 
 Ultima atualizacao: 2026-03-04
 Responsavel atual: Codex
-Status geral: Execucao em andamento (F0, F2 e F3 concluidas; F1 smoke manual pendente; F4-F7 pendentes)
+Status geral: Execucao em andamento (F0, F2, F3 e F4 concluidas; F1 smoke manual pendente; F5-F7 pendentes)
 Referencia principal: `tasks/plano-cli-entrevista-dinamica.md`
 Arquivo historico anterior: `tasks/todo-archive-2026-03-04.md`
 
@@ -155,20 +155,20 @@ Referencias no plano:
 
 Tasks:
 
-- [ ] F4.1 Criar `src/cli/commands.js` com parser para `/help`, `/status`, `/save`, `/new`, `/pause`, `/menu`.
-- [ ] F4.2 Criar `src/ai/handoff-manager.js` para gerar e carregar snapshots de continuidade.
-- [ ] F4.3 Implementar comportamento `/save` no loop de entrevista.
-- [ ] F4.4 Implementar comportamento `/new` iniciando sessao nova com contexto salvo.
-- [ ] F4.5 Persistir historico de handoffs por perfil com timestamp.
+- [x] F4.1 Criar `src/cli/commands.js` com parser para `/help`, `/status`, `/save`, `/new`, `/pause`, `/menu`.
+- [x] F4.2 Criar `src/ai/handoff-manager.js` para gerar e carregar snapshots de continuidade.
+- [x] F4.3 Implementar comportamento `/save` no loop de entrevista.
+- [x] F4.4 Implementar comportamento `/new` iniciando sessao nova com contexto salvo.
+- [x] F4.5 Persistir historico de handoffs por perfil com timestamp.
 
 Criterio de aceite:
 
-- [ ] Fluxo `/save` -> `/new` preserva contexto e reinicia sessao de agente.
+- [x] Fluxo `/save` -> `/new` preserva contexto e reinicia sessao de agente.
 
 Verificacao:
 
-- [ ] Teste E2E dedicado ao handoff.
-- [ ] Confirmacao de arquivo de handoff criado e reutilizado.
+- [x] Teste E2E dedicado ao handoff.
+- [x] Confirmacao de arquivo de handoff criado e reutilizado.
 
 ### F5 - Geracao de documento no menu
 
@@ -251,14 +251,14 @@ Verificacao:
 
 - [x] Gate 1: F0 concluida.
 - [ ] Gate 2: F1 + F2 concluidas (UI base + setup guiado).
-- [ ] Gate 3: F3 + F4 concluidas (entrevista + handoff).
+- [x] Gate 3: F3 + F4 concluidas (entrevista + handoff).
 - [ ] Gate 4: F5 concluida (documentos por menu).
 - [ ] Gate 5: F6 + F7 concluidas (qualidade + docs + release).
 
 ## 6) Revisao da entrega (ciclo atual)
 
-- Escopo executado: entrega da F3 com modo adaptativo integrado ao `runSession`, motor `adaptive-interview-engine`, selecao de modo via config/flag e validacao anti-alucinacao preservada.
-- Resultado objetivo: dois modos operacionais (`phased` e `adaptive`) funcionando no mesmo fluxo com persistencia e transicao de fases no modo adaptativo.
-- Evidencias: `src/ai/adaptive-interview-engine.js`; integracoes em `src/index.js`, `src/cli/menu.js`, `src/cli/setup-wizard.js`; testes `test/adaptive-interview.e2e.test.js` e `test/cli-tui.test.js`; `npm run verify` (ok, 65/65).
-- Risco remanescente: smoke manual no PowerShell continua pendente para fechamento formal da F1 (UX TTY real).
-- Proxima acao recomendada: iniciar F4 (`/save` + `/new` + handoff manager).
+- Escopo executado: fechamento completo da F4 com parser slash integrado ao `runSession`, `handoff-manager`, suporte a `/save` e `/new`, persistencia de historico e retorno por `/menu`.
+- Resultado objetivo: fluxo de handoff auditavel operacional (`/save` -> snapshot versionado -> `/new` com nova sessao de agente e contexto reaproveitado).
+- Evidencias: `src/cli/commands.js`, `src/ai/handoff-manager.js`, integracoes em `src/index.js` e `src/cli/menu.js`; testes `test/handoff-manager.test.js` e `test/handoff.e2e.test.js`; validacao completa com `npm run verify` (ok, 74/74).
+- Risco remanescente: smoke manual no PowerShell continua pendente para fechamento formal da F1 (UX TTY real); UX de handoff em terminal real ainda precisa validacao manual no F6.
+- Proxima acao recomendada: iniciar F5 (menu de geracao de documento + `context-pack-exporter`).

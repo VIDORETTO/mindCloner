@@ -15,6 +15,7 @@ class ContextManager {
     contradictions,
     recentConversation,
     emptyFields,
+    handoffContext,
   }) {
     const messages = [];
     let tokenCount = 0;
@@ -31,6 +32,12 @@ class ContextManager {
       fixedBlocks.push({
         role: "system",
         content: `CONTRADICOES:\n${JSON.stringify(contradictions)}`,
+      });
+    }
+    if (handoffContext && typeof handoffContext === "object") {
+      fixedBlocks.push({
+        role: "system",
+        content: `CONTEXTO DE HANDOFF:\n${JSON.stringify(handoffContext)}`,
       });
     }
 

@@ -6,11 +6,14 @@ const { buildSystemPrompt, buildPhasePrompt } = require("./ai/prompt-builder");
 const { selectNextQuestion } = require("./engine/question-engine");
 const { validateQuestionCandidate } = require("./engine/question-validator");
 const { selectAdaptiveQuestion } = require("./ai/adaptive-interview-engine");
+const { HandoffManager } = require("./ai/handoff-manager");
+const { buildInterviewCommandsHelp, parseInterviewCommand } = require("./cli/commands");
 const {
   applyUpdates,
   registerFieldTrace,
   compressProfileForContext,
   getEmptyFields,
+  getPhaseTargetFields,
   updateMetaCompleteness,
 } = require("./profile/profile-builder");
 const { renderProgress } = require("./cli/progress-bar");
@@ -34,6 +37,73 @@ function calcOverallProgress(currentPhase, currentPhaseProgress) {
 
 function getPhaseKey(phaseNumber) {
   return `phase_${String(phaseNumber).padStart(2, "0")}`;
+}
+
+function buildAgentSessionId() {
+  return `agent-${Date.now()}`;
+}
+
+function collectOpenQuestions(profile) {
+  const maxPhase = getMaxPhaseNumber();
+  const pending = [];
+  for (let phaseNumber = 1; phaseNumber <= maxPhase; phaseNumber += 1) {
+    const fields = getPhaseTargetFields(phaseNumber);
+    const missing = getEmptyFields(fields, profile);
+    for (const field of missing) {
+      if (pending.length >= 30) {
+        return pending;
+      }
+      pending.push(field);
+    }
+  }
+  return pending;
+}
+
+function collectOpenContradictions(contradictions) {
+  return (Array.isArray(contradictions) ? contradictions : [])
+    .filter((entry) => entry && entry.resolved !== true)
+    .map((entry) => (typeof entry === "string" ? entry : String(entry.contradiction || "").trim()))
+    .filter(Boolean)
+    .slice(0, 20);
+}
+
+function buildInterviewStatusMessage({ state, profile, interviewModeLabel, lastHandoffAt = "" }) {
+  const phase = Number(state.current_phase || 1);
+  const progress = Number(state.current_phase_progress || 0).toFixed(0);
+  const overall = Number(state.overall_progress || 0).toFixed(0);
+  const completeness = Number(profile.meta?.completeness_score || 0).toFixed(2);
+  const questions = Number(state.total_questions || 0);
+  const sessions = Number(profile.meta?.total_sessions || 0);
+  return [
+    "Status da entrevista:",
+    `- Fase atual: ${phase} (${progress}%)`,
+    `- Progresso geral: ${overall}%`,
+    `- Completude do perfil: ${completeness}%`,
+    `- Perguntas respondidas: ${questions}`,
+    `- Sessoes concluidas: ${sessions}`,
+    `- Modo ativo: ${interviewModeLabel}`,
+    `- Ultimo handoff: ${lastHandoffAt || "nenhum"}`,
+  ].join("\n");
+}
+
+function buildHandoffContext(snapshot) {
+  if (!snapshot) {
+    return null;
+  }
+  return {
+    handoffId: snapshot.handoffId,
+    createdAt: snapshot.createdAt,
+    sourcePhase: snapshot.sourcePhase,
+    sourcePhaseProgress: snapshot.sourcePhaseProgress,
+    summary: snapshot.summary,
+    openQuestions: Array.isArray(snapshot.openQuestions) ? snapshot.openQuestions.slice(0, 15) : [],
+    openContradictions: Array.isArray(snapshot.openContradictions)
+      ? snapshot.openContradictions.slice(0, 10)
+      : [],
+    recentConversation: Array.isArray(snapshot.recentConversation)
+      ? snapshot.recentConversation.slice(-8)
+      : [],
+  };
 }
 
 function buildRecoveryQuestion(targetField) {
@@ -473,6 +543,10 @@ async function runSession({
     encryptionKey,
     requireEncryption,
   });
+  const handoffManager = new HandoffManager(baseDir, {
+    encryptionKey,
+    requireEncryption,
+  });
   const contextManager = new ContextManager(8000);
   const aiClient = new AIClient({
     provider: aiProvider,
@@ -533,6 +607,10 @@ async function runSession({
   let askedInSession = 0;
   let lastEntry = null;
   let phaseTransitioned = false;
+  let returnToMenu = false;
+  let activeHandoffSnapshot = null;
+  let lastHandoffInfo = null;
+  let agentSessionId = buildAgentSessionId();
 
   while (askedInSession < maxQuestions) {
     const phase = getPhase(state.current_phase);
@@ -625,6 +703,7 @@ async function runSession({
       contradictions,
       recentConversation: sessionLog.slice(-10),
       emptyFields,
+      handoffContext: buildHandoffContext(activeHandoffSnapshot),
     });
 
     const questionContext = {
@@ -708,14 +787,64 @@ async function runSession({
     );
     await io.say(questionText);
     const input = (await io.ask("> ")).trim();
-    if (input === "/pause") {
-      break;
-    }
-    if (input === "/status") {
-      await io.say(
-        `Progresso atual: ${state.current_phase_progress.toFixed(0)}% | Modo: ${modeLabel}`
-      );
-      continue;
+    const interviewCommand = parseInterviewCommand(input);
+    if (interviewCommand) {
+      if (interviewCommand.command === "help") {
+        await io.say(buildInterviewCommandsHelp());
+        continue;
+      }
+      if (interviewCommand.command === "status") {
+        await io.say(
+          buildInterviewStatusMessage({
+            state,
+            profile,
+            interviewModeLabel: modeLabel,
+            lastHandoffAt: lastHandoffInfo?.snapshot?.createdAt || "",
+          })
+        );
+        continue;
+      }
+      if (interviewCommand.command === "save") {
+        const handoffResult = await handoffManager.saveSnapshot(profileId, {
+          sourceSessionId: state.last_session_id || agentSessionId,
+          state,
+          summary: buildPhaseSummary(profile, state.current_phase, state.current_phase_progress),
+          openQuestions: collectOpenQuestions(profile),
+          openContradictions: collectOpenContradictions(contradictions),
+          recentConversation: [...sessionLog.slice(-10), { role: "assistant", content: questionText }],
+          profileCompleteness: profile.meta?.completeness_score || 0,
+        });
+        lastHandoffInfo = handoffResult;
+        activeHandoffSnapshot = handoffResult.snapshot;
+        await io.say(`[Handoff] Snapshot salvo: ${handoffResult.filePath}`);
+        continue;
+      }
+      if (interviewCommand.command === "new") {
+        const loadedHandoff = await handoffManager.loadLatestSnapshot(profileId);
+        if (!loadedHandoff || !loadedHandoff.snapshot) {
+          await io.say(
+            "[Handoff] Nenhum snapshot encontrado. Use /save para criar um handoff antes de /new."
+          );
+          continue;
+        }
+        lastHandoffInfo = loadedHandoff;
+        activeHandoffSnapshot = loadedHandoff.snapshot;
+        sessionLog.length = 0;
+        lastEntry = null;
+        aiFallbackWarnings = 0;
+        agentSessionId = buildAgentSessionId();
+        await io.say(
+          `[Handoff] Nova sessao de agente iniciada com contexto de ${loadedHandoff.snapshot.createdAt}.`
+        );
+        continue;
+      }
+      if (interviewCommand.command === "menu") {
+        returnToMenu = true;
+        break;
+      }
+      if (interviewCommand.command === "pause") {
+        break;
+      }
     }
     if (input === "/skip") {
       sessionLog.push({ role: "assistant", content: questionText });
@@ -837,6 +966,12 @@ async function runSession({
     abortedByConsent: false,
     abortedBySafety: false,
     interviewMode: normalizedInterviewMode,
+    returnToMenu,
+    handoff: {
+      lastSavedAt: lastHandoffInfo?.snapshot?.createdAt || "",
+      lastSavedPath: lastHandoffInfo?.filePath || "",
+      activeHandoffId: activeHandoffSnapshot?.handoffId || "",
+    },
     state,
     profile,
     summary,

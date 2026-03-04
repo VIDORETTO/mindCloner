@@ -495,6 +495,15 @@ async function runFromCliWithDeps(argv, deps = {}) {
     throw error;
   }
 
+  if (result.returnToMenu) {
+    await io.say("\nRetornando ao menu principal...");
+    await io.close();
+    if (interactiveEnabled) {
+      return runFromCliWithDeps(argv, deps);
+    }
+    return;
+  }
+
   if (exportArg) {
     const formats =
       exportArg === true
