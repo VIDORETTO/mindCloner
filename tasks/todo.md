@@ -249,9 +249,24 @@ Status geral: Execucao avancada (P0-P2 concluidos, P3 entregue + P3.5 receitas p
 - [x] Atualizar `tasks/lessons.md` com o aprendizado sobre mensagens de erro e documentacao orientada ao sintoma.
 - [x] Validar com `npm run format:check` e `npm test`.
 
+## 6.4) Plano de execucao do ciclo atual (onboarding + workflow interativo)
+
+- [x] Reestruturar `README.md` para destacar onboarding guiado de primeira execucao ate operacao diaria.
+- [x] Documentar o workflow interativo completo da CLI (entrevista, comandos em tempo real, retomada, deepening e export).
+- [x] Explicar objetivamente por que a configuracao e o uso ficaram mais simples (padroes, comandos copia-e-cola e fluxo incremental).
+- [x] Validar consistencia com `npm exec -- prettier --check --end-of-line auto README.md tasks/todo.md` e registrar revisao deste ciclo.
+
 ## 7) Revisao da entrega (preencher a cada ciclo)
 
 ### Ciclo atual
+
+- Escopo executado: atualizacao completa do README com onboarding guiado e explicacao do workflow interativo ponta a ponta.
+- Resultado objetivo: reduzir friccao de setup e tornar o uso diario previsivel com comandos copia-e-cola e fluxo incremental.
+- Evidencias (testes/comandos): `npm exec -- prettier --check --end-of-line auto README.md tasks/todo.md` (ok).
+- Riscos remanescentes: o comando `npm run format:check` segue inconsistente neste ambiente Windows para o binario `prettier`, apesar de `npm exec prettier` funcionar.
+- Proxima acao recomendada: ajustar a estrategia de format check no projeto para evitar dependencia do PATH local do shell em Windows.
+
+### Ciclo anterior
 
 - Escopo executado: correcao de mensagem de erro de criptografia + troubleshooting explicito no README para o sintoma reportado.
 - Resultado objetivo: reduzir ambiguidade operacional quando perfil existente esta criptografado e a chave nao foi informada.
