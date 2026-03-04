@@ -11,3 +11,4 @@ Ultima atualizacao: 2026-03-04
 - Encerrar cada ciclo com evidencias de verificacao no `tasks/todo.md`.
 - Mensagens de erro devem refletir o sintoma real do fluxo; evitar texto restritivo (ex.: citar apenas `--resume/--status`) quando a falha tambem ocorre em execucao normal com perfil ja criptografado.
 - Sempre documentar troubleshooting com o texto do erro real + significado + cenarios de resolucao (tenho chave, nao tenho chave, quero recomecar).
+- Onboarding nao pode depender de estado anterior do usuario: exemplos de primeiro uso devem usar `--profile` novo/unico e o fluxo padrao nao deve exigir `MINDCLONE_ENCRYPTION_KEY`.

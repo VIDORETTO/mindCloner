@@ -256,9 +256,25 @@ Status geral: Execucao avancada (P0-P2 concluidos, P3 entregue + P3.5 receitas p
 - [x] Explicar objetivamente por que a configuracao e o uso ficaram mais simples (padroes, comandos copia-e-cola e fluxo incremental).
 - [x] Validar consistencia com `npm exec -- prettier --check --end-of-line auto README.md tasks/todo.md` e registrar revisao deste ciclo.
 
+## 6.5) Plano de execucao do ciclo atual (onboarding sem bloqueio por criptografia)
+
+- [x] Ajustar `src/cli/menu.js` para nao exigir criptografia obrigatoria na sessao padrao de primeiro uso.
+- [x] Melhorar mensagem de erro para perfil criptografado sem chave, com instrucao direta de recomeco por `--profile` novo.
+- [x] Atualizar onboarding no `README.md` para usar `--profile` unico e evitar colisao com dados antigos.
+- [x] Cobrir regressao em `test/cli-ops.test.js` validando `requireEncryption: false` no fluxo padrao.
+- [x] Validar com `npm test`.
+
 ## 7) Revisao da entrega (preencher a cada ciclo)
 
 ### Ciclo atual
+
+- Escopo executado: correcao do onboarding para impedir bloqueio no primeiro uso por exigencia de criptografia, com melhora de mensagem orientada para recomeco.
+- Resultado objetivo: permitir primeira execucao sem `MINDCLONE_ENCRYPTION_KEY` e reduzir friccao quando houver perfil antigo criptografado.
+- Evidencias (testes/comandos): `npm test` (ok).
+- Riscos remanescentes: perfis ja criptografados continuam exigindo a chave original para leitura, por limite tecnico do modelo de criptografia.
+- Proxima acao recomendada: adicionar comando `--doctor` para detectar automaticamente perfil criptografado sem chave e oferecer roteiro de recuperacao.
+
+### Ciclo anterior
 
 - Escopo executado: atualizacao completa do README com onboarding guiado e explicacao do workflow interativo ponta a ponta.
 - Resultado objetivo: reduzir friccao de setup e tornar o uso diario previsivel com comandos copia-e-cola e fluxo incremental.

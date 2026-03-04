@@ -50,10 +50,11 @@ Se esse comando passar, o projeto esta pronto para uso.
 ### 3) Criar primeira sessao interativa
 
 ```bash
-node bin/mindclone.js --baseDir ./.mindclone --profile ana-silva
+node bin/mindclone.js --baseDir ./.mindclone --profile meu-primeiro-perfil
 ```
 
 Esse comando ja e suficiente para comecar. Nao precisa configurar provider externo para iniciar o fluxo basico.
+Use um `--profile` unico (evite IDs antigos) para nao colidir com dados de sessoes anteriores.
 
 ## Workflow interativo detalhado
 
@@ -234,6 +235,12 @@ Significa que esse perfil ja foi salvo com criptografia. Sem a chave correta, a 
 - Se voce tem a chave: exporte `MINDCLONE_ENCRYPTION_KEY` e rode novamente.
 - Se nao tem a chave: nao e possivel abrir os dados antigos.
 - Se quer recomecar: use outro `--profile` ou outro `--baseDir`.
+
+Exemplo rapido para recomecar com perfil novo:
+
+```bash
+node bin/mindclone.js --baseDir ./.mindclone --profile meu-primeiro-perfil-v2
+```
 
 ### Erro: "Perfil nao encontrado..."
 

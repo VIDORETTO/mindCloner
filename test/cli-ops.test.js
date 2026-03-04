@@ -148,6 +148,7 @@ test("CLI: repassa --ai-base-url para runSession", async () => {
   const tmpRoot = await fs.mkdtemp(path.join(os.tmpdir(), "mindclone-cli-ai-base-"));
   const io = createMemoryIO();
   let capturedBaseUrl = "";
+  let capturedRequireEncryption = true;
   await runFromCliWithDeps(
     [
       "node",
@@ -165,6 +166,7 @@ test("CLI: repassa --ai-base-url para runSession", async () => {
       ioFactory: () => io,
       runSessionFn: async (input) => {
         capturedBaseUrl = input.aiBaseUrl;
+        capturedRequireEncryption = input.requireEncryption;
         return {
           summary: "ok",
           state: { current_phase: 1, overall_progress: 0 },
@@ -174,4 +176,5 @@ test("CLI: repassa --ai-base-url para runSession", async () => {
     }
   );
   assert.equal(capturedBaseUrl, "http://127.0.0.1:11434");
+  assert.equal(capturedRequireEncryption, false);
 });

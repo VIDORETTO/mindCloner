@@ -321,7 +321,7 @@ async function runFromCliWithDeps(argv, deps = {}) {
       requireConsent: true,
       consentSource: "cli",
       encryptionKey,
-      requireEncryption: true,
+      requireEncryption: false,
       deepeningMode,
       aiProvider,
       aiModel,
@@ -332,8 +332,9 @@ async function runFromCliWithDeps(argv, deps = {}) {
     });
   } catch (error) {
     if (/nenhuma chave foi fornecida|chave de criptografia ausente/i.test(String(error.message))) {
+      const suggestedProfile = `${normalizedProfileId}-novo`;
       throw new Error(
-        "Dados criptografados detectados para este perfil. Defina MINDCLONE_ENCRYPTION_KEY para acessar dados existentes (status, resume ou execucao normal com perfil ja salvo)."
+        `Dados criptografados detectados para este perfil. Defina MINDCLONE_ENCRYPTION_KEY para acessar dados existentes (status, resume ou execucao normal com perfil ja salvo). Se voce nunca configurou chave e so quer comecar agora, use um perfil novo, por exemplo: --profile ${suggestedProfile}`
       );
     }
     throw error;
