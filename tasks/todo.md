@@ -242,9 +242,24 @@ Status geral: Execucao avancada (P0-P2 concluidos, P3 entregue + P3.5 receitas p
 - [x] Validar qualidade com `npm run format:check` e `npm run verify`.
 - [x] Realizar commit e push no GitHub remoto `origin/master`.
 
+## 6.3) Plano de execucao do ciclo atual (erro de chave de criptografia)
+
+- [x] Corrigir mensagem de erro da CLI para refletir quando `MINDCLONE_ENCRYPTION_KEY` e obrigatoria em perfil criptografado.
+- [x] Atualizar `README.md` com secao explicita do erro reportado e passos de resolucao por cenario.
+- [x] Atualizar `tasks/lessons.md` com o aprendizado sobre mensagens de erro e documentacao orientada ao sintoma.
+- [x] Validar com `npm run format:check` e `npm test`.
+
 ## 7) Revisao da entrega (preencher a cada ciclo)
 
 ### Ciclo atual
+
+- Escopo executado: correcao de mensagem de erro de criptografia + troubleshooting explicito no README para o sintoma reportado.
+- Resultado objetivo: reduzir ambiguidade operacional quando perfil existente esta criptografado e a chave nao foi informada.
+- Evidencias (testes/comandos): `npm run format:check` (ok); `npm test` (49/49 passando).
+- Riscos remanescentes: o usuario ainda depende de guardar a chave original para reabrir dados criptografados antigos.
+- Proxima acao recomendada: adicionar comando de diagnostico (`--doctor`) para detectar automaticamente falta de chave e sugerir acao guiada.
+
+### Ciclo anterior
 
 - Escopo executado: reescrita completa do README com onboarding didatico e operacao fim-a-fim para iniciantes.
 - Resultado objetivo: permitir que qualquer pessoa entenda o projeto, instale e use sem contexto previo.

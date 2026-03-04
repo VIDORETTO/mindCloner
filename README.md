@@ -258,14 +258,33 @@ node bin/mindclone.js --baseDir ./.mindclone --profile ana-silva --status
 
 ## Troubleshooting (erros comuns)
 
-### Erro: "Dados criptografados detectados..."
+### Erro: "Dados criptografados detectados para este perfil..."
 
-Causa: chave ausente ou incorreta.
+Exemplo real de mensagem:
 
-Como resolver:
+`Erro ao executar MindClone: Dados criptografados detectados para este perfil. Defina MINDCLONE_ENCRYPTION_KEY para acessar dados existentes...`
 
-1. Defina `MINDCLONE_ENCRYPTION_KEY` com a chave correta.
-2. Rode o comando novamente.
+O que isso significa:
+
+- esse perfil ja tem arquivos criptografados no `baseDir`;
+- sem a chave correta, a CLI nao consegue ler `status`, `resume` nem abrir sessao normal desse perfil existente;
+- o provider (`openai`, `local`, `anthropic`, `ollama`) nao muda esse comportamento.
+
+Como resolver (3 cenarios):
+
+1. Voce sabe a chave original:
+   defina `MINDCLONE_ENCRYPTION_KEY` e rode novamente.
+2. Voce nao sabe a chave e quer continuar esse mesmo perfil:
+   sem a chave original nao e possivel descriptografar dados antigos.
+3. Voce nao sabe a chave e quer recomecar:
+   use outro `--profile` ou outro `--baseDir` para iniciar dados novos.
+
+Exemplo PowerShell:
+
+```powershell
+$env:MINDCLONE_ENCRYPTION_KEY="sua-chave-original"
+node bin/mindclone.js --baseDir ./.mindclone --profile gabriel-vidoretto --status
+```
 
 ### Erro: "Perfil nao encontrado..."
 

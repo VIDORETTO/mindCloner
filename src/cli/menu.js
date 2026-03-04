@@ -333,7 +333,7 @@ async function runFromCliWithDeps(argv, deps = {}) {
   } catch (error) {
     if (/nenhuma chave foi fornecida|chave de criptografia ausente/i.test(String(error.message))) {
       throw new Error(
-        "Dados criptografados detectados. Defina MINDCLONE_ENCRYPTION_KEY antes de usar --resume/--status."
+        "Dados criptografados detectados para este perfil. Defina MINDCLONE_ENCRYPTION_KEY para acessar dados existentes (status, resume ou execucao normal com perfil ja salvo)."
       );
     }
     throw error;

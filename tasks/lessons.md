@@ -9,3 +9,5 @@ Ultima atualizacao: 2026-03-04
 - Projeto executavel deve ter governanca minima publicada (`LICENSE`, `CONTRIBUTING.md`, `SECURITY.md`).
 - Atualizar metadados e documentacao para refletir o estado real do produto, evitando descricoes obsoletas.
 - Encerrar cada ciclo com evidencias de verificacao no `tasks/todo.md`.
+- Mensagens de erro devem refletir o sintoma real do fluxo; evitar texto restritivo (ex.: citar apenas `--resume/--status`) quando a falha tambem ocorre em execucao normal com perfil ja criptografado.
+- Sempre documentar troubleshooting com o texto do erro real + significado + cenarios de resolucao (tenho chave, nao tenho chave, quero recomecar).
