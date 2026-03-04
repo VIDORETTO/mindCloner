@@ -240,7 +240,7 @@ Status geral: Execucao avancada (P0-P2 concluidos, P3 entregue + P3.5 receitas p
 - [x] Publicar instalacao e uso passo a passo detalhado (setup, primeira execucao, retomada, exportacao e modos avancados).
 - [x] Incluir troubleshooting, FAQ e glossario rapido para iniciantes.
 - [x] Validar qualidade com `npm run format:check` e `npm run verify`.
-- [ ] Realizar commit e push no GitHub remoto `origin/master`.
+- [x] Realizar commit e push no GitHub remoto `origin/master`.
 
 ## 7) Revisao da entrega (preencher a cada ciclo)
 
