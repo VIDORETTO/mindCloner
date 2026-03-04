@@ -1,0 +1,28 @@
+{
+  "name": "mindcloner",
+  "version": "0.1.0",
+  "private": true,
+  "description": "MindClone CLI - plataforma completa de mapeamento em 10 fases com operacao avancada",
+  "bin": {
+    "mindclone": "./bin/mindclone.js"
+  },
+  "scripts": {
+    "start": "node ./bin/mindclone.js",
+    "test": "node --test",
+    "lint": "eslint --max-warnings=0 .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "tsc --noEmit",
+    "verify": "npm run lint && npm run typecheck && npm test"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.0.2",
+    "globals": "^17.4.0",
+    "prettier": "^3.8.1",
+    "typescript": "^5.9.3"
+  }
+}

@@ -1,0 +1,4 @@
+node_modules/
+.mindclone/
+.tmp-check/
+coverage/
