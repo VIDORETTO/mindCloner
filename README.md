@@ -1,258 +1,120 @@
 # MindCloner
 
-MindCloner e uma CLI (programa de terminal) para mapear um perfil em 10 fases, salvar progresso localmente e operar funcoes avancadas como exportacao, comparacao, diario e plugins.
+MindCloner e uma CLI (aplicativo de terminal) para construir um perfil humano estruturado em 10 fases, com foco em clareza, continuidade e seguranca.
 
-Este README foi escrito para iniciantes. Se voce nunca usou esse projeto, siga a secao "Primeiro uso".
+Em termos simples: voce conversa com a ferramenta, ela organiza suas respostas por tema e gera um perfil reutilizavel para analise, reflexao, comparacao e uso com IA (incluindo formato para RAG).
 
-## 1) O que voce precisa
+## Para que este projeto serve
+
+- Mapear uma pessoa de forma progressiva (fase 1 ate fase 10).
+- Salvar progresso local para continuar depois sem perder contexto.
+- Refinar o perfil apos o fluxo principal (`--deepening`).
+- Registrar entradas livres de diario (`--journal`).
+- Comparar dois perfis (`--compare`).
+- Exportar em formatos prontos para leitura humana e pipelines de IA (`json`, `markdown`, `summary`, `rag-chunks`).
+- Operar com provedores de IA externos ou fallback local.
+
+## Como o MindCloner funciona (visao simples)
+
+### 1) Fluxo por fases
+
+O motor da CLI percorre 10 fases de coleta. Cada fase cobre uma camada diferente do perfil (identidade, estilo de vida, dinamica social, valores, cognicao etc.).
+
+### 2) Persistencia local
+
+Tudo fica no `--baseDir` escolhido por voce. Isso permite:
+
+- pausar e retomar;
+- consultar status sem abrir entrevista;
+- exportar resultados quando quiser.
+
+### 3) Seguranca e confiabilidade
+
+O projeto inclui:
+
+- consentimento explicito;
+- protocolo de crise emocional;
+- criptografia em repouso (quando habilitada por chave);
+- hardening de persistencia com recuperacao por backup.
+
+### 4) Operacao avancada
+
+Depois do fluxo base, voce pode usar modos como `--deepening`, `--mirror`, `--import`, `--compare`, `--plugin` e `--telemetry`.
+
+## Requisitos
 
 - Node.js 20 ou superior
-- Terminal (PowerShell, CMD, Bash, etc.)
-- Projeto clonado/baixado localmente
+- npm
+- Terminal (PowerShell, CMD, Bash, zsh etc.)
 
-## 2) Instalacao
+## Instalacao (passo a passo)
 
-No diretorio do projeto:
+### Passo 1: obter o projeto
+
+Se ainda nao tiver a pasta local:
+
+```bash
+git clone https://github.com/VIDORETTO/mindCloner.git
+cd mindCloner
+```
+
+### Passo 2: instalar dependencias
 
 ```bash
 npm install
 ```
 
-## 3) Primeiro uso (passo a passo)
-
-### Passo 1: escolher uma pasta de dados
-
-O `--baseDir` e onde o MindCloner salva seus perfis.
-
-Exemplo:
+### Passo 3: validar ambiente
 
 ```bash
-node bin/mindclone.js --baseDir ./.mindclone --profile joao-silva
+npm run verify
 ```
 
-### Passo 2: responder as perguntas
+Se esse comando passar, seu ambiente esta pronto.
 
-O fluxo normal passa por fases 1-10. Voce pode usar comandos durante a entrevista:
+## Primeiro uso (guia completo para iniciantes)
+
+### Passo 1: iniciar um perfil novo
+
+Escolha um identificador simples para o perfil (ex.: `ana-silva`) e uma pasta de dados local (`.mindclone`):
+
+```bash
+node bin/mindclone.js --baseDir ./.mindclone --profile ana-silva
+```
+
+Durante a entrevista, comandos rapidos disponiveis:
 
 - `/status`: mostra progresso atual
-- `/skip`: pula a pergunta atual
-- `/pause`: encerra a sessao atual
+- `/skip`: pula pergunta atual
+- `/pause`: encerra sessao para retomar depois
 
-### Passo 3: retomar depois
-
-```bash
-node bin/mindclone.js --baseDir ./.mindclone --profile joao-silva --resume
-```
-
-### Passo 4: consultar status sem entrevistar
+### Passo 2: retomar quando quiser
 
 ```bash
-node bin/mindclone.js --baseDir ./.mindclone --profile joao-silva --status
+node bin/mindclone.js --baseDir ./.mindclone --profile ana-silva --resume
 ```
 
-### Passo 5: exportar resultados
+### Passo 3: ver status sem entrevistar
 
 ```bash
-node bin/mindclone.js --baseDir ./.mindclone --profile joao-silva --status --export json,markdown,summary,rag-chunks
+node bin/mindclone.js --baseDir ./.mindclone --profile ana-silva --status
 ```
 
-## 4) Comandos principais (resumo rapido)
-
-- Criar/continuar sessao normal:
-  `node bin/mindclone.js --baseDir ./.mindclone --profile <id>`
-- Retomar perfil existente:
-  `node bin/mindclone.js --baseDir ./.mindclone --profile <id> --resume`
-- Ver status:
-  `node bin/mindclone.js --baseDir ./.mindclone --profile <id> --status`
-- Exportar:
-  `node bin/mindclone.js --baseDir ./.mindclone --profile <id> --status --export json,summary`
-- Deepening pos-fase-10:
-  `node bin/mindclone.js --baseDir ./.mindclone --profile <id> --deepening`
-
-## 5) Modos avancados explicados
-
-### 5.1 `--deepening`
-
-O que faz:
-
-- Roda perguntas de refinamento depois que a fase 10 ja foi concluida.
-
-Quando usar:
-
-- Quando voce quer aumentar completude/confianca sem recomecar do zero.
-
-Exemplo:
+### Passo 4: exportar artefatos
 
 ```bash
-node bin/mindclone.js --baseDir ./.mindclone --profile joao-silva --deepening
+node bin/mindclone.js --baseDir ./.mindclone --profile ana-silva --status --export json,markdown,summary,rag-chunks
 ```
 
-### 5.2 `--mirror`
-
-O que faz:
-
-- Mostra um resumo reflexivo com base no perfil e nas ultimas entradas de diario.
-
-Quando usar:
-
-- Para revisar rapidamente o estado atual da pessoa/perfil.
-
-Exemplo:
+### Passo 5: refinamento pos-fase-10
 
 ```bash
-node bin/mindclone.js --baseDir ./.mindclone --profile joao-silva --mirror
+node bin/mindclone.js --baseDir ./.mindclone --profile ana-silva --deepening
 ```
 
-### 5.3 `--journal` e `--journal-tags`
+## Estrutura de dados gerada
 
-O que faz:
-
-- Salva uma entrada de diario associada ao perfil.
-
-Quando usar:
-
-- Para registrar contexto que nao veio da entrevista principal.
-
-Exemplo:
-
-```bash
-node bin/mindclone.js --baseDir ./.mindclone --profile joao-silva --journal "Hoje avancei no projeto" --journal-tags foco,energia
-```
-
-### 5.4 `--import`
-
-O que faz:
-
-- Importa dados de um arquivo JSON externo e faz merge no perfil.
-
-Quando usar:
-
-- Para acelerar onboarding com dados ja existentes.
-
-Exemplo:
-
-```bash
-node bin/mindclone.js --baseDir ./.mindclone --profile joao-silva --import ./dados/perfil-externo.json
-```
-
-### 5.5 `--compare`
-
-O que faz:
-
-- Compara dois perfis e mostra diferencas resumidas.
-
-Modos:
-
-- Direto (2 ids): `--compare perfil-a,perfil-b`
-- Relativo ao perfil atual: `--profile perfil-a --compare perfil-b`
-
-Exemplos:
-
-```bash
-node bin/mindclone.js --baseDir ./.mindclone --compare perfil-a,perfil-b
-node bin/mindclone.js --baseDir ./.mindclone --profile perfil-a --compare perfil-b
-```
-
-### 5.6 `--plugin`
-
-O que faz:
-
-- Carrega plugin(s) por caminho para receber eventos de CLI.
-
-Exemplo de uso:
-
-```bash
-node bin/mindclone.js --baseDir ./.mindclone --profile joao-silva --status --plugin ./plugins/audit.js,./plugins/metrics.js
-```
-
-Contrato minimo de plugin:
-
-```js
-module.exports = {
-  name: "sample-plugin",
-  async onCliEvent(eventName, context) {
-    // eventName pode ser:
-    // cli:start, cli:status, cli:mirror, cli:journal,
-    // cli:import, cli:compare, cli:session-finished
-    // context traz args, profileId, baseDir, io e payload do evento.
-  },
-};
-```
-
-### 5.7 `--telemetry on|off|status`
-
-O que faz:
-
-- Liga/desliga/consulta telemetria anonimizada opt-in.
-
-Exemplos:
-
-```bash
-node bin/mindclone.js --baseDir ./.mindclone --telemetry on
-node bin/mindclone.js --baseDir ./.mindclone --telemetry off
-node bin/mindclone.js --baseDir ./.mindclone --telemetry status
-```
-
-## 6) Exportacao detalhada
-
-Formatos suportados:
-
-- `json`
-- `markdown`
-- `summary`
-- `rag-chunks`
-
-Comando:
-
-```bash
-node bin/mindclone.js --baseDir ./.mindclone --profile joao-silva --status --export json,markdown,summary,rag-chunks
-```
-
-Pasta de saida:
-
-```text
-exports/<profileId>/
-```
-
-## 7) Providers de IA
-
-Flags:
-
-- `--provider` (ex.: `local`, `openai`, `anthropic`, `ollama`)
-- `--ai-model`
-- `--ai-key`
-- `--ai-base-url`
-- `--ai-timeout`
-- `--ai-retries`
-
-Exemplo:
-
-```bash
-node bin/mindclone.js --baseDir ./.mindclone --profile joao-silva --provider openai --ai-model gpt-4.1-mini --ai-key SUA_CHAVE
-```
-
-Variaveis de ambiente equivalentes:
-
-- `MINDCLONE_AI_PROVIDER`
-- `MINDCLONE_AI_MODEL`
-- `MINDCLONE_AI_API_KEY`
-- `MINDCLONE_AI_BASE_URL`
-- `MINDCLONE_AI_TIMEOUT_MS`
-- `MINDCLONE_AI_RETRIES`
-
-## 8) Criptografia local
-
-Se seus dados estiverem criptografados, voce precisa informar:
-
-```bash
-MINDCLONE_ENCRYPTION_KEY=<sua-chave>
-```
-
-Sem essa chave correta, comandos que leem perfis (como `--resume` e `--status`) podem falhar.
-
-## 9) Estrutura de dados (visao simples)
-
-Dentro de `--baseDir`, o projeto cria arquivos/pastas como:
+Dentro do `--baseDir`, a estrutura tipica e:
 
 ```text
 <baseDir>/
@@ -271,180 +133,216 @@ Dentro de `--baseDir`, o projeto cria arquivos/pastas como:
   telemetry.json
 ```
 
-## 10) Troubleshooting (erros comuns)
+## Comandos principais (resumo rapido)
 
-### Erro: "Dados criptografados detectados..."
+- Sessao normal:
+  `node bin/mindclone.js --baseDir ./.mindclone --profile <id>`
+- Retomar:
+  `node bin/mindclone.js --baseDir ./.mindclone --profile <id> --resume`
+- Status:
+  `node bin/mindclone.js --baseDir ./.mindclone --profile <id> --status`
+- Exportar:
+  `node bin/mindclone.js --baseDir ./.mindclone --profile <id> --status --export json,summary`
+- Deepening:
+  `node bin/mindclone.js --baseDir ./.mindclone --profile <id> --deepening`
 
-Causa comum:
+## Modos avancados explicados
 
-- Voce tem dados criptografados e nao definiu `MINDCLONE_ENCRYPTION_KEY`.
+### `--mirror`
 
-Como resolver:
-
-1. Defina a variavel de ambiente com a chave correta.
-2. Rode novamente o comando.
-
-Exemplo (PowerShell):
-
-```powershell
-$env:MINDCLONE_ENCRYPTION_KEY="minha-chave"
-node bin/mindclone.js --baseDir ./.mindclone --profile joao-silva --status
-```
-
-### Erro: "Perfil nao encontrado..."
-
-Causa comum:
-
-- `--profile` esta errado.
-- `--baseDir` nao aponta para a pasta onde o perfil foi salvo.
-- Uso de `--resume` para perfil que ainda nao existe.
-
-Como resolver:
-
-1. Confirme `--baseDir` correto.
-2. Confirme `--profile` correto.
-3. Se for primeiro uso, rode sem `--resume`.
-
-### Erro: "Plugin invalido..."
-
-Causa comum:
-
-- Arquivo nao exporta objeto.
-- Caminho do plugin esta errado.
-
-Como resolver:
-
-1. Verifique caminho do arquivo passado em `--plugin`.
-2. Garanta `module.exports = { ... }`.
-3. Garanta que o arquivo nao tem erro de sintaxe.
-
-### Erro: valor invalido para `--telemetry`
-
-Causa comum:
-
-- Valor diferente de `on`, `off` ou `status`.
-
-Como resolver:
-
-- Use somente:
-  `--telemetry on`
-  `--telemetry off`
-  `--telemetry status`
-
-## 11) Testes
-
-Rodar todos os testes:
+Mostra um resumo reflexivo do estado atual do perfil.
 
 ```bash
-npm test
-```
-
-Validar qualidade completa antes de subir alteracoes:
-
-```bash
-npm run lint
-npm run typecheck
-npm run verify
-```
-
-## 12) Receitas prontas (copiar e usar)
-
-### Receita A: onboarding rapido (primeira coleta)
-
-Objetivo:
-
-- Criar perfil, registrar primeiro contexto e checar status.
-
-Comandos:
-
-```bash
-node bin/mindclone.js --baseDir ./.mindclone --profile ana-silva
-node bin/mindclone.js --baseDir ./.mindclone --profile ana-silva --journal "Inicio de mapeamento" --journal-tags onboarding,inicio
-node bin/mindclone.js --baseDir ./.mindclone --profile ana-silva --status
-```
-
-### Receita B: retomar trabalho parado
-
-Objetivo:
-
-- Continuar exatamente de onde parou.
-
-Comando:
-
-```bash
-node bin/mindclone.js --baseDir ./.mindclone --profile ana-silva --resume
-```
-
-Se der "Perfil nao encontrado":
-
-1. confira `--baseDir`
-2. confira `--profile`
-3. rode sem `--resume` se for primeiro uso
-
-### Receita C: diagnostico rapido do perfil
-
-Objetivo:
-
-- Obter leitura curta do estado atual sem abrir entrevista.
-
-Comandos:
-
-```bash
-node bin/mindclone.js --baseDir ./.mindclone --profile ana-silva --status
 node bin/mindclone.js --baseDir ./.mindclone --profile ana-silva --mirror
 ```
 
-### Receita D: comparar duas pessoas/perfis
+### `--journal` e `--journal-tags`
 
-Objetivo:
+Registra entrada livre de diario ligada ao perfil.
 
-- Ver diferencas entre dois perfis.
+```bash
+node bin/mindclone.js --baseDir ./.mindclone --profile ana-silva --journal "Hoje tive mais clareza" --journal-tags reflexao,clareza
+```
 
-Comando:
+### `--import`
+
+Importa um JSON externo e faz merge no perfil.
+
+```bash
+node bin/mindclone.js --baseDir ./.mindclone --profile ana-silva --import ./dados/perfil-externo.json
+```
+
+### `--compare`
+
+Compara dois perfis.
 
 ```bash
 node bin/mindclone.js --baseDir ./.mindclone --compare ana-silva,bruno-souza
 ```
 
-### Receita E: exportar para uso em RAG/IA
-
-Objetivo:
-
-- Gerar artefatos prontos para ingestao e consulta.
-
-Comando:
+Ou comparacao relativa ao perfil atual:
 
 ```bash
-node bin/mindclone.js --baseDir ./.mindclone --profile ana-silva --status --export json,summary,rag-chunks
+node bin/mindclone.js --baseDir ./.mindclone --profile ana-silva --compare bruno-souza
 ```
 
-Resultado esperado:
+### `--plugin`
 
-- Arquivos em `exports/ana-silva/`
-- `rag-chunks` pronto para indexacao vetorial
+Carrega plugin(s) por caminho.
 
-### Receita F: ligar e auditar telemetria opt-in
+```bash
+node bin/mindclone.js --baseDir ./.mindclone --profile ana-silva --status --plugin ./plugins/audit.js,./plugins/metrics.js
+```
 
-Objetivo:
+Contrato minimo de plugin:
 
-- Ativar coleta anonima e verificar estado.
+```js
+module.exports = {
+  name: "sample-plugin",
+  async onCliEvent(eventName, context) {
+    // Recebe eventos da CLI e contexto da execucao.
+  },
+};
+```
 
-Comandos:
+### `--telemetry on|off|status`
+
+Controla telemetria anonimizada opt-in.
 
 ```bash
 node bin/mindclone.js --baseDir ./.mindclone --telemetry on
 node bin/mindclone.js --baseDir ./.mindclone --telemetry status
+node bin/mindclone.js --baseDir ./.mindclone --telemetry off
 ```
 
-### Receita G: fallback rapido para erro de criptografia
+## Providers de IA
 
-Objetivo:
+Voce pode configurar provider e parametros por flags:
 
-- Resolver leitura de dados criptografados.
+- `--provider` (`local`, `openai`, `anthropic`, `ollama`)
+- `--ai-model`
+- `--ai-key`
+- `--ai-base-url`
+- `--ai-timeout`
+- `--ai-retries`
 
-Comandos (PowerShell):
+Exemplo:
+
+```bash
+node bin/mindclone.js --baseDir ./.mindclone --profile ana-silva --provider openai --ai-model gpt-4.1-mini --ai-key SUA_CHAVE
+```
+
+Variaveis de ambiente equivalentes:
+
+- `MINDCLONE_AI_PROVIDER`
+- `MINDCLONE_AI_MODEL`
+- `MINDCLONE_AI_API_KEY`
+- `MINDCLONE_AI_BASE_URL`
+- `MINDCLONE_AI_TIMEOUT_MS`
+- `MINDCLONE_AI_RETRIES`
+
+## Criptografia local
+
+Se dados do perfil estiverem criptografados, defina:
+
+```bash
+MINDCLONE_ENCRYPTION_KEY=<sua-chave>
+```
+
+Exemplo no PowerShell:
 
 ```powershell
 $env:MINDCLONE_ENCRYPTION_KEY="minha-chave"
 node bin/mindclone.js --baseDir ./.mindclone --profile ana-silva --status
 ```
+
+## Troubleshooting (erros comuns)
+
+### Erro: "Dados criptografados detectados..."
+
+Causa: chave ausente ou incorreta.
+
+Como resolver:
+
+1. Defina `MINDCLONE_ENCRYPTION_KEY` com a chave correta.
+2. Rode o comando novamente.
+
+### Erro: "Perfil nao encontrado..."
+
+Causas comuns:
+
+- `--profile` errado;
+- `--baseDir` errado;
+- uso de `--resume` em perfil ainda nao criado.
+
+Como resolver:
+
+1. Confirme `--baseDir`.
+2. Confirme `--profile`.
+3. Se for primeiro uso, rode sem `--resume`.
+
+### Erro: "Plugin invalido..."
+
+Causas comuns:
+
+- caminho invalido;
+- arquivo nao exporta objeto.
+
+Como resolver:
+
+1. Revise caminho passado em `--plugin`.
+2. Garanta `module.exports = { ... }`.
+3. Corrija erros de sintaxe no plugin.
+
+### Erro: valor invalido para `--telemetry`
+
+Use apenas:
+
+- `on`
+- `off`
+- `status`
+
+## FAQ rapido
+
+### Preciso terminar tudo em uma sessao?
+
+Nao. O fluxo foi feito para pausar e retomar com seguranca.
+
+### Posso usar sem provider externo?
+
+Sim. Existe provider local/fallback para manter o fluxo.
+
+### Onde ficam meus dados?
+
+No `--baseDir` que voce escolheu.
+
+### Como gerar saida para RAG?
+
+Use `--status --export ...` incluindo `rag-chunks`.
+
+## Qualidade e testes
+
+- Rodar testes:
+
+```bash
+npm test
+```
+
+- Validar formatacao:
+
+```bash
+npm run format:check
+```
+
+- Validacao completa:
+
+```bash
+npm run verify
+```
+
+## Glossario rapido
+
+- `profileId`: identificador unico do perfil (ex.: `ana-silva`).
+- `baseDir`: pasta raiz de dados locais do MindCloner.
+- `deepening`: refinamento continuo apos fase 10.
+- `rag-chunks`: fragmentos estruturados para indexacao/consulta por IA.

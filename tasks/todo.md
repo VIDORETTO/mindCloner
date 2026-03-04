@@ -234,9 +234,25 @@ Status geral: Execucao avancada (P0-P2 concluidos, P3 entregue + P3.5 receitas p
 - [x] Atualizar metadados do pacote para refletir estado real do projeto.
 - [x] Validar tudo via comandos locais e registrar evidencias em "Revisao da entrega".
 
+## 6.2) Plano de execucao do ciclo atual (README completo + publicacao)
+
+- [x] Reescrever `README.md` para explicar objetivo, funcionamento interno e valor do projeto em linguagem simples.
+- [x] Publicar instalacao e uso passo a passo detalhado (setup, primeira execucao, retomada, exportacao e modos avancados).
+- [x] Incluir troubleshooting, FAQ e glossario rapido para iniciantes.
+- [x] Validar qualidade com `npm run format:check` e `npm run verify`.
+- [ ] Realizar commit e push no GitHub remoto `origin/master`.
+
 ## 7) Revisao da entrega (preencher a cada ciclo)
 
 ### Ciclo atual
+
+- Escopo executado: reescrita completa do README com onboarding didatico e operacao fim-a-fim para iniciantes.
+- Resultado objetivo: permitir que qualquer pessoa entenda o projeto, instale e use sem contexto previo.
+- Evidencias (testes/comandos): `npm run format:check` (ok); `npm run verify` (lint + typecheck + testes, 49/49 passando).
+- Riscos remanescentes: exemplos de comandos precisam ser mantidos sincronizados quando novas flags forem adicionadas.
+- Proxima acao recomendada: gerar uma versao curta do README para "quickstart em 60 segundos" com link para o guia completo.
+
+### Ciclo anterior
 
 - Escopo executado: hardening de pronto para producao com CI, quality gates e governanca minima.
 - Resultado objetivo: tornar o projeto verificavel em PR/push e operacionalmente auditavel para colaboracao externa.
