@@ -1,0 +1,22 @@
+{
+  "run_id": "release-readiness-20260304-220216",
+  "created_at": "2026-03-05T01:02:33.905Z",
+  "checks": {
+    "verify_ok": true,
+    "smoke_command_ok": true,
+    "smoke_report_found": true,
+    "smoke_report_all_checks_passed": true
+  },
+  "ready_for_release": true,
+  "references": {
+    "smoke_report": "C:\\Users\\gabri\\Documents\\Sistemas\\mindCloner\\tasks\\evidence\\smoke-report-20260304-220233.json"
+  },
+  "commands": {
+    "verify": {
+      "code": 0
+    },
+    "smoke_powershell": {
+      "code": 0
+    }
+  }
+}

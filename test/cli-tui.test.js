@@ -98,7 +98,7 @@ test("CLI TUI: acao continue-interview ativa caminho de resume", async () => {
   assert(io.outputs.some((line) => line.includes("Retomando sessao existente")));
 });
 
-test("CLI TUI: acao generate-document ativa status+export sem runSession", async () => {
+test("CLI TUI: acao generate-document aplica preset selecionado sem runSession", async () => {
   const tmpRoot = await fs.mkdtemp(path.join(os.tmpdir(), "mindclone-cli-tui-export-"));
   const profileId = "tui-export-a1";
   const manager = new SessionManager(tmpRoot);
@@ -111,7 +111,11 @@ test("CLI TUI: acao generate-document ativa status+export sem runSession", async
     {
       ioFactory: () => io,
       shouldUseInteractiveShellFn: () => true,
-      tuiRunner: async () => ({ action: "generate-document" }),
+      tuiRunner: async () => ({
+        action: "generate-document",
+        exportPreset: "context-pack",
+        exportFormats: ["context-pack"],
+      }),
       setupWizardFn: async () => createSetupResult(tmpRoot, profileId),
       runSessionFn: async () => {
         runCalls += 1;
@@ -123,6 +127,12 @@ test("CLI TUI: acao generate-document ativa status+export sem runSession", async
   assert.equal(runCalls, 0);
   assert(io.outputs.some((line) => line.includes("Status atual:")));
   assert(io.outputs.some((line) => line.includes("Exportacao concluida em")));
+  const contextPackPath = path.join(tmpRoot, "exports", profileId, "context-pack.md");
+  const contextPackExists = await fs
+    .access(contextPackPath)
+    .then(() => true)
+    .catch(() => false);
+  assert.equal(contextPackExists, true);
 });
 
 test("CLI Setup: first-use executa wizard e salva settings", async () => {

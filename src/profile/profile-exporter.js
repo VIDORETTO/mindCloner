@@ -1,9 +1,10 @@
 const fs = require("node:fs/promises");
 const path = require("node:path");
 const { createEmptyProfile } = require("./profile-schema");
+const { buildContextPack } = require("./context-pack-exporter");
 const { getByPath } = require("../utils/object-path");
 
-const SUPPORTED_FORMATS = new Set(["json", "markdown", "summary", "rag-chunks"]);
+const SUPPORTED_FORMATS = new Set(["json", "markdown", "summary", "rag-chunks", "context-pack"]);
 const REQUIRED_PATHS = collectPaths(createEmptyProfile("__schema__"));
 
 function collectPaths(source, prefix = "") {
@@ -34,7 +35,9 @@ function normalizeFormats(input) {
   const unique = [...new Set(parsed)];
   for (const format of unique) {
     if (!SUPPORTED_FORMATS.has(format)) {
-      throw new Error(`Formato de exportacao nao suportado: ${format}`);
+      throw new Error(
+        `Formato de exportacao nao suportado: ${format}. Formatos validos: ${[...SUPPORTED_FORMATS].join(", ")}. Acao recomendada: ajuste --export para um dos formatos suportados.`
+      );
     }
   }
   return unique;
@@ -213,6 +216,12 @@ async function writeIfRequested(format, outputDir, profile, state, files) {
     const file = path.join(outputDir, "rag-chunks.jsonl");
     await fs.writeFile(file, renderRagChunks(profile), "utf8");
     files["rag-chunks"] = file;
+    return;
+  }
+  if (format === "context-pack") {
+    const file = path.join(outputDir, "context-pack.md");
+    await fs.writeFile(file, buildContextPack(profile, state), "utf8");
+    files["context-pack"] = file;
   }
 }
 

@@ -85,7 +85,11 @@ function parseCompareProfileIds(compareArg, normalizedProfileId, rawProfileId) {
   return [normalizedProfileId, parts[0]];
 }
 
-function applyInteractiveAction(args, action) {
+function applyInteractiveAction(args, interactiveResult) {
+  const action =
+    typeof interactiveResult === "string"
+      ? interactiveResult
+      : String(interactiveResult?.action || "");
   if (action === "continue-interview") {
     args.set("--resume", true);
     return;
@@ -96,6 +100,13 @@ function applyInteractiveAction(args, action) {
   }
   if (action === "generate-document") {
     args.set("--status", true);
+    const selectedFormats = Array.isArray(interactiveResult?.exportFormats)
+      ? interactiveResult.exportFormats
+      : [];
+    if (selectedFormats.length > 0) {
+      args.set("--export", selectedFormats.join(","));
+      return;
+    }
     if (!args.get("--export")) {
       args.set("--export", true);
     }
@@ -104,6 +115,38 @@ function applyInteractiveAction(args, action) {
 
 function isTerminalInteractive(stdin, stdout) {
   return Boolean(stdin?.isTTY && stdout?.isTTY);
+}
+
+async function exportWithFeedback({
+  io,
+  baseDir,
+  profileId,
+  profile,
+  state,
+  exportArg,
+}) {
+  try {
+    const formats =
+      exportArg === true
+        ? ["json", "markdown", "summary", "rag-chunks"]
+        : normalizeFormats(exportArg);
+    const exported = await exportProfileBundle({
+      baseDir,
+      profileId,
+      profile,
+      state,
+      formats,
+    });
+    await io.say(`\nExportacao concluida em: ${exported.outputDir}`);
+    for (const [format, file] of Object.entries(exported.files)) {
+      await io.say(`- ${format}: ${file}`);
+    }
+  } catch (error) {
+    const detail = String(error?.message || error || "erro desconhecido");
+    throw new Error(
+      `Falha ao exportar documentos para o perfil "${profileId}": ${detail} Acao recomendada: revise o valor de --export e a permissao de escrita no diretorio base.`
+    );
+  }
 }
 
 async function runFromCliWithDeps(argv, deps = {}) {
@@ -197,16 +240,17 @@ async function runFromCliWithDeps(argv, deps = {}) {
         stdin,
         stdout,
       });
-      if (!interactive || interactive.action === "exit") {
+      const selectedAction = String(interactive?.action || "");
+      if (!interactive || selectedAction === "exit") {
         return;
       }
-      if (interactive.action === "settings") {
+      if (selectedAction === "settings") {
         await runWizardAndPersist("edit", rawProfileId);
         rawProfileId = args.get("--profile") || settings.defaultProfileId || rawProfileId;
         normalizedProfileId = slug(rawProfileId);
         continue;
       }
-      applyInteractiveAction(args, interactive.action);
+      applyInteractiveAction(args, interactive);
       break;
     }
   }
@@ -334,21 +378,14 @@ async function runFromCliWithDeps(argv, deps = {}) {
     }
     await io.say(`\n${formatStatus(loaded.state, loaded.profile)}`);
     if (exportArg) {
-      const formats =
-        exportArg === true
-          ? ["json", "markdown", "summary", "rag-chunks"]
-          : normalizeFormats(exportArg);
-      const exported = await exportProfileBundle({
+      await exportWithFeedback({
+        io,
         baseDir,
         profileId: normalizedProfileId,
         profile: loaded.profile,
         state: loaded.state,
-        formats,
+        exportArg,
       });
-      await io.say(`\nExportacao concluida em: ${exported.outputDir}`);
-      for (const [format, file] of Object.entries(exported.files)) {
-        await io.say(`- ${format}: ${file}`);
-      }
     }
     await telemetryTrack("cli.status", { export: Boolean(exportArg) });
     await notifyPlugins("cli:status", { state: loaded.state, profile: loaded.profile });
@@ -505,21 +542,14 @@ async function runFromCliWithDeps(argv, deps = {}) {
   }
 
   if (exportArg) {
-    const formats =
-      exportArg === true
-        ? ["json", "markdown", "summary", "rag-chunks"]
-        : normalizeFormats(exportArg);
-    const exported = await exportProfileBundle({
+    await exportWithFeedback({
+      io,
       baseDir,
       profileId: normalizedProfileId,
       profile: result.profile,
       state: result.state,
-      formats,
+      exportArg,
     });
-    await io.say(`\nExportacao concluida em: ${exported.outputDir}`);
-    for (const [format, file] of Object.entries(exported.files)) {
-      await io.say(`- ${format}: ${file}`);
-    }
   }
 
   await io.say(`\nResumo da fase: ${result.summary}`);
@@ -538,4 +568,5 @@ module.exports = {
   slug,
   parseCompareProfileIds,
   applyInteractiveAction,
+  exportWithFeedback,
 };

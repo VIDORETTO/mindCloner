@@ -29,6 +29,51 @@ const OPERATIONAL_FLAGS = new Set([
   "--setup",
 ]);
 
+const DOCUMENT_PRESETS = [
+  {
+    id: "context-pack",
+    label: "Resumo para IA",
+    help: "Context pack objetivo para iniciar outra IA sem perder contexto.",
+    formats: ["context-pack"],
+  },
+  {
+    id: "markdown",
+    label: "Perfil completo em Markdown",
+    help: "Documento legivel para revisao humana.",
+    formats: ["markdown"],
+  },
+  {
+    id: "json",
+    label: "JSON estruturado",
+    help: "Formato completo para automacoes e integracoes.",
+    formats: ["json"],
+  },
+  {
+    id: "summary",
+    label: "Resumo executivo",
+    help: "Resumo textual curto do estado atual do perfil.",
+    formats: ["summary"],
+  },
+  {
+    id: "rag-chunks",
+    label: "RAG chunks",
+    help: "Fragmentos JSONL para indexacao vetorial.",
+    formats: ["rag-chunks"],
+  },
+  {
+    id: "all",
+    label: "Pacote completo",
+    help: "Exporta todos os formatos disponiveis.",
+    formats: ["context-pack", "json", "markdown", "summary", "rag-chunks"],
+  },
+  {
+    id: "back",
+    label: "Voltar",
+    help: "Retorna ao menu principal sem exportar.",
+    formats: [],
+  },
+];
+
 function shouldUseInteractiveShell({ args, stdin = process.stdin, stdout = process.stdout } = {}) {
   if (!args || typeof args.get !== "function") {
     return false;
@@ -62,11 +107,46 @@ function buildHomeMessage({ profileId, baseDir }) {
   ].join("\n");
 }
 
+function buildDocumentMessage({ profileId, baseDir }) {
+  return [
+    "MindCloner - Gerar documento",
+    `Perfil: ${profileId}`,
+    `Base: ${baseDir}`,
+    "",
+    "Escolha o preset de exportacao e confirme com Enter.",
+  ].join("\n");
+}
+
 function createSelectPrompt(config, selectFactory) {
   if (typeof selectFactory === "function") {
     return selectFactory(config);
   }
   return new Select(config);
+}
+
+async function runDocumentPresetPrompt({ profileId, baseDir, selectFactory }) {
+  const choices = DOCUMENT_PRESETS.map((item) => ({
+    name: item.id,
+    message: item.label,
+    hint: item.help,
+  }));
+  const prompt = createSelectPrompt(
+    {
+      name: "document-preset",
+      message: buildDocumentMessage({ profileId, baseDir }),
+      choices,
+    },
+    selectFactory
+  );
+  const selectedId = await prompt.run();
+  const selected = DOCUMENT_PRESETS.find((item) => item.id === selectedId) || null;
+  if (!selected || selected.id === "back") {
+    return null;
+  }
+  return {
+    id: selected.id,
+    formats: [...selected.formats],
+  };
 }
 
 async function runInteractiveShell({
@@ -138,10 +218,32 @@ async function runInteractiveShell({
       };
     }
 
-    return {
-      action: selected.id,
-      state,
-    };
+    if (selected.id === "generate-document") {
+      try {
+        const preset = await runDocumentPresetPrompt({
+          profileId,
+          baseDir,
+          selectFactory,
+        });
+        if (!preset) {
+          continue;
+        }
+        return {
+          action: selected.id,
+          exportPreset: preset.id,
+          exportFormats: preset.formats,
+          state,
+        };
+      } catch {
+        state = reduceUiState(state, { type: "EXIT" });
+        return {
+          action: "exit",
+          state,
+        };
+      }
+    }
+
+    return { action: selected.id, state };
   }
 
   return {

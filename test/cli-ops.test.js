@@ -144,6 +144,75 @@ test("CLI --status --export: gera artefatos sem iniciar entrevista", async () =>
   assert.equal(mdExists, true);
 });
 
+test("CLI --status --export context-pack: gera resumo para IA dedicado", async () => {
+  const tmpRoot = await fs.mkdtemp(path.join(os.tmpdir(), "mindclone-cli-status-context-pack-"));
+  const profileId = "status-context-pack-a1";
+  const manager = new SessionManager(tmpRoot);
+  const loaded = await manager.loadOrCreate(profileId);
+  loaded.profile.identity.preferred_name = "Rafa";
+  loaded.profile.synthesis.core_essence_paragraph = "Analitica e pragmatica.";
+  await manager.saveAll(profileId, loaded);
+
+  const io = createMemoryIO();
+  await runFromCliWithDeps(
+    [
+      "node",
+      "bin/mindclone.js",
+      "--baseDir",
+      tmpRoot,
+      "--profile",
+      profileId,
+      "--status",
+      "--export",
+      "context-pack",
+    ],
+    {
+      ioFactory: () => io,
+      runSessionFn: async () => {
+        throw new Error("Nao deveria executar runSession");
+      },
+    }
+  );
+
+  const contextPackPath = path.join(tmpRoot, "exports", profileId, "context-pack.md");
+  const contextPackExists = await fs
+    .access(contextPackPath)
+    .then(() => true)
+    .catch(() => false);
+  assert.equal(contextPackExists, true);
+});
+
+test("CLI --status --export invalido: retorna erro com causa e acao recomendada", async () => {
+  const tmpRoot = await fs.mkdtemp(path.join(os.tmpdir(), "mindclone-cli-status-export-invalid-"));
+  const profileId = "status-export-invalid-a1";
+  const manager = new SessionManager(tmpRoot);
+  await manager.loadOrCreate(profileId);
+
+  await assert.rejects(
+    () =>
+      runFromCliWithDeps(
+        [
+          "node",
+          "bin/mindclone.js",
+          "--baseDir",
+          tmpRoot,
+          "--profile",
+          profileId,
+          "--status",
+          "--export",
+          "xml",
+        ],
+        {
+          ioFactory: () => createMemoryIO(),
+          runSessionFn: async () => {
+            throw new Error("Nao deveria executar runSession");
+          },
+        }
+      ),
+    /Falha ao exportar documentos.*Acao recomendada/i
+  );
+});
+
 test("CLI: repassa --ai-base-url para runSession", async () => {
   const tmpRoot = await fs.mkdtemp(path.join(os.tmpdir(), "mindclone-cli-ai-base-"));
   const io = createMemoryIO();

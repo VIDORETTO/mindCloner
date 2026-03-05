@@ -12,7 +12,11 @@ const {
 
 test("ProfileExporter: normaliza formatos e rejeita formato invalido", () => {
   assert.deepEqual(normalizeFormats("json, markdown,summary"), ["json", "markdown", "summary"]);
-  assert.throws(() => normalizeFormats("json,xml"), /nao suportado/i);
+  assert.deepEqual(normalizeFormats("context-pack"), ["context-pack"]);
+  assert.throws(
+    () => normalizeFormats("json,xml"),
+    /nao suportado.*Acao recomendada/i
+  );
 });
 
 test("ProfileExporter: valida schema do perfil", () => {
@@ -58,4 +62,26 @@ test("ProfileExporter: gera json, markdown, summary e rag-chunks em exports/<use
   assert.match(mdRaw, /# MindClone Export/);
   assert.match(summaryRaw, /Completeness: 88.7%/);
   assert.equal(ragRaw.trim().split("\n").length >= 4, true);
+});
+
+test("ProfileExporter: gera context-pack dedicado para IA", async () => {
+  const tmpRoot = await fs.mkdtemp(path.join(os.tmpdir(), "mindclone-export-context-pack-"));
+  const profile = createEmptyProfile("export-context-pack-v1");
+  profile.identity.preferred_name = "Camila";
+  profile.professional.current_role = "Designer de Produto";
+  profile.synthesis.core_essence_paragraph = "Estruturada e orientada ao usuario.";
+  profile.synthesis.rag_instruction = "Responder de forma objetiva e sem inventar fatos.";
+
+  const result = await exportProfileBundle({
+    baseDir: tmpRoot,
+    profileId: "export-context-pack-v1",
+    profile,
+    state: { current_phase: 8, overall_progress: 73 },
+    formats: ["context-pack"],
+  });
+
+  const contextPackRaw = await fs.readFile(result.files["context-pack"], "utf8");
+  assert.match(result.files["context-pack"], /context-pack\.md$/);
+  assert.match(contextPackRaw, /Resumo para IA/i);
+  assert.match(contextPackRaw, /Camila/);
 });
