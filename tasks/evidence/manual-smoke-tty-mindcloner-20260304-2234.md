@@ -6,21 +6,25 @@
 - Comando principal validado: `mindcloner --baseDir ./.mindclone --profile smoke-tty-a2`
 
 ## Objetivo
+
 Fechar o gap do plano inicial (secao 11) exigindo smoke manual em PowerShell com comando global `mindcloner`.
 
 ## Execucao e resultados
 
 ### R1.1 Preparacao do comando global
+
 - Resultado: OK.
 - Acao executada: `npm link`.
 - Evidencia: shims globais criados em `C:/Users/gabri/AppData/Roaming/npm/` (`mindcloner`, `mindcloner.cmd`, `mindcloner.ps1`).
 
 ### R1.2 Execucao TTY com comando global
+
 - Resultado: OK.
 - Comando executado em PTY PowerShell real:
   - `mindcloner --baseDir ./.mindclone --profile smoke-tty-a2`
 
 ### R1.3 Validacao de navegacao e slash commands
+
 - Resultado: OK.
 - Menu por setas validado nas opcoes:
   - `Iniciar entrevista`
@@ -39,6 +43,7 @@ Fechar o gap do plano inicial (secao 11) exigindo smoke manual em PowerShell com
   - `.mindclone/profiles/smoke-tty-a2/handoffs/handoff-20260305T013336Z.json`
 
 ### R1.4 Validacao de export por menu
+
 - Resultado: OK.
 - Presets obrigatorios executados:
   - `Resumo para IA` (`context-pack`)
@@ -51,9 +56,11 @@ Fechar o gap do plano inicial (secao 11) exigindo smoke manual em PowerShell com
   - `rag-chunks.jsonl`
 
 ### R1.5 Registro de evidencia
+
 - Resultado: OK.
 - Este arquivo cumpre a evidencia manual solicitada para o comando global `mindcloner`.
 
 ## Conclusao
+
 - Smoke manual TTY com comando global `mindcloner`: APROVADO.
 - Gap do plano inicial (gate final com `mindcloner`) fechado sem erros bloqueantes.

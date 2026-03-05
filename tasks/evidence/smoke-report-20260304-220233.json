@@ -1,25 +1,25 @@
 ﻿{
-    "run_id":  "smoke-20260304-220233",
-    "created_at":  "2026-03-05T01:02:33.8500123Z",
-    "base_dir":  "C:\\Users\\gabri\\Documents\\Sistemas\\mindCloner\\.smoke\\smoke-20260304-220233",
-    "profile_id":  "release-20260304-220233",
-    "checks":  {
-                   "handoff_history_exists":  true,
-                   "export_context_pack_exists":  true,
-                   "export_json_exists":  true,
-                   "export_markdown_exists":  true,
-                   "export_summary_exists":  true,
-                   "export_rag_chunks_exists":  true,
-                   "bootstrap_log_exists":  true,
-                   "session_log_exists":  true,
-                   "status_log_exists":  true
-               },
-    "all_checks_passed":  true,
-    "artifacts":  {
-                      "handoff_history":  "C:\\Users\\gabri\\Documents\\Sistemas\\mindCloner\\.smoke\\smoke-20260304-220233\\profiles\\release-20260304-220233\\handoffs\\history.json",
-                      "export_dir":  "C:\\Users\\gabri\\Documents\\Sistemas\\mindCloner\\.smoke\\smoke-20260304-220233\\exports\\release-20260304-220233",
-                      "bootstrap_log":  "C:\\Users\\gabri\\Documents\\Sistemas\\mindCloner\\tasks\\evidence\\smoke-bootstrap-20260304-220233.log",
-                      "session_log":  "C:\\Users\\gabri\\Documents\\Sistemas\\mindCloner\\tasks\\evidence\\smoke-session-20260304-220233.log",
-                      "status_log":  "C:\\Users\\gabri\\Documents\\Sistemas\\mindCloner\\tasks\\evidence\\smoke-status-20260304-220233.log"
-                  }
+  "run_id": "smoke-20260304-220233",
+  "created_at": "2026-03-05T01:02:33.8500123Z",
+  "base_dir": "C:\\Users\\gabri\\Documents\\Sistemas\\mindCloner\\.smoke\\smoke-20260304-220233",
+  "profile_id": "release-20260304-220233",
+  "checks": {
+    "handoff_history_exists": true,
+    "export_context_pack_exists": true,
+    "export_json_exists": true,
+    "export_markdown_exists": true,
+    "export_summary_exists": true,
+    "export_rag_chunks_exists": true,
+    "bootstrap_log_exists": true,
+    "session_log_exists": true,
+    "status_log_exists": true
+  },
+  "all_checks_passed": true,
+  "artifacts": {
+    "handoff_history": "C:\\Users\\gabri\\Documents\\Sistemas\\mindCloner\\.smoke\\smoke-20260304-220233\\profiles\\release-20260304-220233\\handoffs\\history.json",
+    "export_dir": "C:\\Users\\gabri\\Documents\\Sistemas\\mindCloner\\.smoke\\smoke-20260304-220233\\exports\\release-20260304-220233",
+    "bootstrap_log": "C:\\Users\\gabri\\Documents\\Sistemas\\mindCloner\\tasks\\evidence\\smoke-bootstrap-20260304-220233.log",
+    "session_log": "C:\\Users\\gabri\\Documents\\Sistemas\\mindCloner\\tasks\\evidence\\smoke-session-20260304-220233.log",
+    "status_log": "C:\\Users\\gabri\\Documents\\Sistemas\\mindCloner\\tasks\\evidence\\smoke-status-20260304-220233.log"
+  }
 }

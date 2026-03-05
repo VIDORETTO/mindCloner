@@ -13,10 +13,7 @@ const {
 test("ProfileExporter: normaliza formatos e rejeita formato invalido", () => {
   assert.deepEqual(normalizeFormats("json, markdown,summary"), ["json", "markdown", "summary"]);
   assert.deepEqual(normalizeFormats("context-pack"), ["context-pack"]);
-  assert.throws(
-    () => normalizeFormats("json,xml"),
-    /nao suportado.*Acao recomendada/i
-  );
+  assert.throws(() => normalizeFormats("json,xml"), /nao suportado.*Acao recomendada/i);
 });
 
 test("ProfileExporter: valida schema do perfil", () => {

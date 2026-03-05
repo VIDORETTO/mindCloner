@@ -160,9 +160,13 @@ class HandoffManager {
     const historyPath = this.getHistoryPath(profileId);
     const history = await this.store.readJson(historyPath, [], { sensitive: true });
     const entry = this.buildHistoryEntry(snapshot, filePath);
-    const normalizedHistory = toArray(history).filter((item) => item && item.handoffId !== entry.handoffId);
+    const normalizedHistory = toArray(history).filter(
+      (item) => item && item.handoffId !== entry.handoffId
+    );
     normalizedHistory.push(entry);
-    normalizedHistory.sort((left, right) => String(left.createdAt).localeCompare(String(right.createdAt)));
+    normalizedHistory.sort((left, right) =>
+      String(left.createdAt).localeCompare(String(right.createdAt))
+    );
     await this.store.writeJson(historyPath, normalizedHistory.slice(-200), { sensitive: true });
     return {
       snapshot,
@@ -185,7 +189,9 @@ class HandoffManager {
     const history = await this.listHistory(profileId, { limit: 1 });
     if (history.length > 0) {
       const latest = history[0];
-      const snapshot = await this.store.readJson(String(latest.filePath || ""), null, { sensitive: true });
+      const snapshot = await this.store.readJson(String(latest.filePath || ""), null, {
+        sensitive: true,
+      });
       if (snapshot) {
         return {
           snapshot,

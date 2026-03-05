@@ -1,11 +1,4 @@
-const INTERVIEW_COMMANDS = Object.freeze([
-  "help",
-  "status",
-  "save",
-  "new",
-  "pause",
-  "menu",
-]);
+const INTERVIEW_COMMANDS = Object.freeze(["help", "status", "save", "new", "pause", "menu"]);
 
 const INTERVIEW_COMMAND_SET = new Set(INTERVIEW_COMMANDS);
 

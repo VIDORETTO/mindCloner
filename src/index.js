@@ -811,7 +811,10 @@ async function runSession({
           summary: buildPhaseSummary(profile, state.current_phase, state.current_phase_progress),
           openQuestions: collectOpenQuestions(profile),
           openContradictions: collectOpenContradictions(contradictions),
-          recentConversation: [...sessionLog.slice(-10), { role: "assistant", content: questionText }],
+          recentConversation: [
+            ...sessionLog.slice(-10),
+            { role: "assistant", content: questionText },
+          ],
           profileCompleteness: profile.meta?.completeness_score || 0,
         });
         lastHandoffInfo = handoffResult;

@@ -6,20 +6,24 @@
 - Perfil/baseDir: `smoke-tty-a1` em `./.mindclone`
 
 ## Objetivo
+
 Executar o gate manual P1 com validacao de navegacao TTY, comandos slash da entrevista e export por menu.
 
 ## Execucao e resultados
 
 ### P1.1 Executar CLI em terminal TTY real
+
 - Resultado: OK.
 - Evidencia observada: abertura da TUI com menu principal e deteccao interativa (setas + Enter).
 
 ### P1.2 Validar navegacao por setas no menu
+
 - Resultado: OK.
 - Itens navegados por setas: `Iniciar entrevista`, `Continuar entrevista`, `Gerar documento`, `Configuracoes`, `Diagnostico`, `Sair`.
 - Evidencia observada: highlight mudou corretamente entre todas as opcoes e retornou para `Iniciar entrevista`.
 
 ### P1.3 Validar comandos slash da entrevista
+
 - Resultado: OK.
 - Comandos executados em TTY real:
   - `/status`: exibiu progresso/fase/completude/sessoes.
@@ -30,6 +34,7 @@ Executar o gate manual P1 com validacao de navegacao TTY, comandos slash da entr
 - Observacao: provider OpenAI sem chave (`missing-api-key`) acionou fallback local como esperado.
 
 ### P1.4 Validar `Gerar documento` para presets obrigatorios
+
 - Resultado: OK.
 - Presets executados por menu:
   - `Resumo para IA` (`context-pack`)
@@ -42,10 +47,12 @@ Executar o gate manual P1 com validacao de navegacao TTY, comandos slash da entr
   - `rag-chunks.jsonl`
 
 ### P1.5 Registrar evidencia manual
+
 - Resultado: OK.
 - Este arquivo cumpre a evidencia manual do smoke TTY.
 
 ## Validacoes de artefatos (filesystem)
+
 - Handoffs:
   - `.mindclone/profiles/smoke-tty-a1/handoffs/handoff-20260305T010904Z.json`
   - `.mindclone/profiles/smoke-tty-a1/handoffs/history.json`
@@ -57,5 +64,6 @@ Executar o gate manual P1 com validacao de navegacao TTY, comandos slash da entr
   - `.mindclone/exports/smoke-tty-a1/rag-chunks.jsonl`
 
 ## Conclusao
+
 - Smoke manual TTY no PowerShell: APROVADO.
 - Sem erros bloqueantes de UX/fluxo durante o gate P1.

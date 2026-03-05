@@ -117,14 +117,7 @@ function isTerminalInteractive(stdin, stdout) {
   return Boolean(stdin?.isTTY && stdout?.isTTY);
 }
 
-async function exportWithFeedback({
-  io,
-  baseDir,
-  profileId,
-  profile,
-  state,
-  exportArg,
-}) {
+async function exportWithFeedback({ io, baseDir, profileId, profile, state, exportArg }) {
   try {
     const formats =
       exportArg === true

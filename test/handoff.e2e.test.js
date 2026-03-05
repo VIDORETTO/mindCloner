@@ -24,14 +24,7 @@ function createScriptedIO(answers) {
 test("Handoff E2E: /save seguido de /new preserva contexto e cria snapshot", async () => {
   const tmpRoot = await fs.mkdtemp(path.join(os.tmpdir(), "mindclone-handoff-e2e-"));
   const profileId = "handoff-flow-a1";
-  const io = createScriptedIO([
-    "Joao Pedro da Silva",
-    "/save",
-    "/new",
-    "JP",
-    "/status",
-    "/pause",
-  ]);
+  const io = createScriptedIO(["Joao Pedro da Silva", "/save", "/new", "JP", "/status", "/pause"]);
 
   const result = await runSession({
     profileId,

@@ -22,10 +22,12 @@ Historico detalhado: `tasks/todo-archive-2026-03-04.md`
 ### R1 - Fechar gap do plano inicial: smoke manual com comando global `mindcloner`
 
 Contexto:
+
 - No plano inicial (secao 11), o gate final pede smoke manual no PowerShell com comando global `mindcloner`.
 - A evidencia manual atual foi registrada com `node bin/mindclone.js`.
 
 Checklist:
+
 - [x] R1.1 Preparar comando global local (`npm link`) no ambiente de teste.
 - [x] R1.2 Executar smoke manual TTY no PowerShell usando `mindcloner --baseDir ./.mindclone --profile smoke-tty-a2`.
 - [x] R1.3 Validar menu por setas + comandos slash essenciais (`/status`, `/save`, `/new`, `/menu`, `/pause`).
@@ -33,16 +35,19 @@ Checklist:
 - [x] R1.5 Registrar evidencia em `tasks/evidence/manual-smoke-tty-mindcloner-20260304-2234.md`.
 
 Criterio de aceite:
+
 - [x] Evidencia manual de smoke com `mindcloner` anexada e sem erro bloqueante.
 
 ### R2 - Preparacao final de PR/release
 
 Checklist:
+
 - [x] R2.1 Revisar `git status` e confirmar somente arquivos esperados de implementacao/release.
 - [x] R2.2 Revisar diff final de `README.md`, `package.json`, `src/**`, `test/**`, `scripts/**`, `tasks/evidence/**`.
 - [x] R2.3 Escrever resumo final de release (escopo entregue + evidencias principais) para descricao de PR.
 
 Criterio de aceite:
+
 - [x] Pacote de alteracoes pronto para abrir PR sem pendencias operacionais.
 
 ## 3) Evidencias atuais ja disponiveis

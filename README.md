@@ -1,14 +1,23 @@
 # MindCloner
 
-MindCloner e uma CLI com UX guiada por menu para mapear perfil em 10 fases, manter continuidade entre sessoes e exportar artefatos prontos para uso humano e IA.
+MindCloner e uma CLI para mapeamento de perfil em 10 fases, com operacao guiada por menu (TTY), continuidade de sessao, handoff anti-alucinacao (`/save` -> `/new`) e exportacao de artefatos para uso humano e IA.
 
-## O que voce consegue fazer
+## Status atual do projeto
 
-- Rodar onboarding guiado na primeira execucao (setup + consentimento).
-- Navegar no menu principal por setas (`Iniciar`, `Continuar`, `Gerar documento`, `Configuracoes`, `Diagnostico`).
-- Entrevistar em modo `adaptive` ou `phased`.
-- Executar handoff anti-alucinacao com `/save` e `/new` durante a conversa.
-- Exportar documentos direto pelo menu, sem depender de flags.
+- Escopo tecnico do plano inicial concluido (F0-F7).
+- Gates de release internos fechados.
+- Smoke de release aprovado:
+  - assistido (`npm run smoke:powershell`)
+  - manual TTY no PowerShell
+  - manual TTY com comando global `mindcloner`
+- Readiness consolidado aprovado (`npm run release:readiness`).
+
+Evidencias principais:
+
+- `tasks/evidence/release-readiness-20260304-220216.json`
+- `tasks/evidence/smoke-report-20260304-220233.json`
+- `tasks/evidence/manual-smoke-tty-20260304-2210.md`
+- `tasks/evidence/manual-smoke-tty-mindcloner-20260304-2234.md`
 
 ## Requisitos
 
@@ -22,129 +31,171 @@ MindCloner e uma CLI com UX guiada por menu para mapear perfil em 10 fases, mant
 git clone https://github.com/VIDORETTO/mindCloner.git
 cd mindCloner
 npm install
-npm run verify
 ```
 
-## Inicio rapido (nova UX de menu)
+## Workflow atual do projeto
 
-### 1) Abrir a CLI
+### 1) Workflow de uso (produto)
+
+1. Abrir a CLI em terminal interativo (TTY):
+   - `node bin/mindclone.js --baseDir ./.mindclone --profile meu-perfil`
+   - ou `npx mindcloner --baseDir ./.mindclone --profile meu-perfil`
+2. No primeiro uso, concluir wizard de setup.
+3. Navegar no menu por setas (`Iniciar`, `Continuar`, `Gerar documento`, `Configuracoes`, `Diagnostico`, `Sair`).
+4. Durante entrevista, usar slash commands (`/status`, `/save`, `/new`, `/menu`, `/pause`, `/help`).
+5. Gerar documentos pelo menu (`Resumo para IA`, `Pacote completo`, etc).
+
+### 2) Workflow de desenvolvimento
+
+1. Implementar/alterar codigo.
+2. Rodar validacao local completa:
+   - `npm run lint`
+   - `npm run format:check`
+   - `npm run typecheck`
+   - `npm test`
+3. Rodar smoke assistido (quando houver impacto de fluxo):
+   - `npm run smoke:powershell`
+4. Rodar readiness consolidado para release candidate:
+   - `npm run release:readiness`
+
+### 3) Workflow de CI (GitHub Actions)
+
+Arquivo: `.github/workflows/ci.yml`
+
+- Trigger: `push` (main/master) e `pull_request`
+- Matrix: Node `20` e `22`
+- Etapas por job:
+  - `npm ci`
+  - `npm run lint`
+  - `npm run format:check`
+  - `npm run typecheck`
+  - `npm test`
+
+## Execucao da CLI
+
+### Modo interativo (recomendado)
 
 ```bash
-node bin/mindclone.js --baseDir ./.mindclone --profile meu-perfil
+node bin/mindclone.js --baseDir ./.mindclone --profile ana-silva
 ```
 
-Alternativa com binario:
+Ativado quando:
+
+- `stdin` e `stdout` sao TTY
+- nenhuma flag operacional bloqueante foi passada (ex.: `--status`, `--export`, `--resume`, etc)
+
+### Comando global `mindcloner`
+
+Para validar/usar comando global local:
 
 ```bash
-npx mindcloner --baseDir ./.mindclone --profile meu-perfil
+npm link
+mindcloner --baseDir ./.mindclone --profile ana-silva
 ```
 
-### 2) Primeiro uso (wizard)
+### Modo por flags (operacao avancada)
 
-No primeiro uso, a CLI abre setup guiado para:
+Comandos suportados:
 
-- `defaultProfileId`
-- `baseDir`
-- modo padrao da entrevista (`adaptive` ou `phased`)
-- limite de perguntas por sessao
-- consentimento
-- cadastro opcional de API key OpenAI
+- status:
+  - `--status`
+- retomar sessao:
+  - `--resume`
+- modo deepening:
+  - `--deepening`
+- modo de entrevista:
+  - `--interview-mode adaptive|phased`
+- limite de perguntas:
+  - `--max-questions <n>`
+- exportacao:
+  - `--export json,markdown,summary,rag-chunks,context-pack`
+- provider/model/key/baseURL/timeouts:
+  - `--provider`
+  - `--ai-model`
+  - `--ai-key`
+  - `--ai-base-url`
+  - `--ai-timeout`
+  - `--ai-retries`
+- setup:
+  - `--setup`
+- operacoes extras:
+  - `--journal`
+  - `--journal-tags`
+  - `--mirror`
+  - `--import`
+  - `--compare`
+  - `--telemetry on|off|status`
+  - `--plugin <path[,path...]>`
 
-Provider/modelo sao travados nesta fase para:
+Exemplo de status + export:
 
-- provider: `openai`
-- model: `gpt-5-mini-2025-08-07`
+```bash
+node bin/mindclone.js --baseDir ./.mindclone --profile ana-silva --status --export context-pack,json,markdown,summary,rag-chunks
+```
 
-### 3) Menu principal
+## Menu e slash commands
 
-Use setas e Enter. Fluxo recomendado:
+### Menu principal
 
-1. `Iniciar entrevista` (ou `Continuar entrevista`)
-2. responder perguntas
-3. usar comandos slash quando necessario
-4. `/menu` para voltar ao menu principal
-5. `Gerar documento` para exportar
+- `Iniciar entrevista`
+- `Continuar entrevista`
+- `Gerar documento`
+- `Configuracoes`
+- `Diagnostico`
+- `Sair`
 
-## Comandos slash durante entrevista
-
-Comandos disponiveis:
-
-- `/help`: mostra ajuda rapida
-- `/status`: mostra progresso atual
-- `/save`: salva snapshot de handoff
-- `/new`: inicia nova sessao de agente com ultimo handoff
-- `/pause`: encerra sessao com persistencia
-- `/menu`: volta ao menu principal sem perder dados
-
-## Fluxo anti-alucinacao (`/save` -> `/new`)
-
-Use quando a conversa perder qualidade/contexto:
-
-1. durante a entrevista, execute `/save`
-2. confirme caminho do snapshot gerado
-3. execute `/new`
-4. a CLI inicia sessao nova de agente reaproveitando o ultimo handoff
-
-Resultado: continuidade auditavel sem perder estado do perfil.
-
-## Configuracoes pelo menu
-
-Opcao `Configuracoes` reabre o wizard de edicao para ajustar:
-
-- perfil padrao
-- diretorio base de dados
-- modo padrao da entrevista
-- limite de perguntas por sessao
-- consentimento ativo
-- API key OpenAI (opcional)
-
-Arquivos de configuracao:
-
-- `settings.json`
-- `settings.secrets.json` (criptografado quando `MINDCLONE_ENCRYPTION_KEY` estiver definido)
-
-## Geracao de documentos pelo menu
-
-No menu `Gerar documento`, selecione um preset por setas:
+### Presets de documento no menu
 
 - `Resumo para IA` -> `context-pack.md`
 - `Perfil completo em Markdown` -> `profile.md`
 - `JSON estruturado` -> `profile.json`
 - `Resumo executivo` -> `summary.txt`
 - `RAG chunks` -> `rag-chunks.jsonl`
-- `Pacote completo` -> todos os formatos
+- `Pacote completo` -> todos
 
-A CLI mostra o diretorio final e cada arquivo gerado em:
+### Slash commands durante entrevista
 
-- `exports/<profileId>/`
+- `/help`
+- `/status`
+- `/save`
+- `/new`
+- `/pause`
+- `/menu`
 
-## Guia rapido (passo a passo)
+## Configuracao e seguranca
 
-1. `node bin/mindclone.js --baseDir ./.mindclone --profile ana-silva`
-2. concluir setup inicial
-3. escolher `Iniciar entrevista`
-4. durante a conversa, usar `/status` e `/save` quando necessario
-5. usar `/new` se precisar trocar de contexto de agente
-6. usar `/menu` ao terminar a sessao
-7. escolher `Gerar documento` e selecionar preset
-8. validar arquivos em `./.mindclone/exports/ana-silva/`
+### Settings
 
-## Operacao avancada por flags (compatibilidade)
+Arquivo: `<baseDir>/settings.json`
 
-- status: `--status`
-- retomar: `--resume`
-- deepening: `--deepening`
-- export direto: `--status --export summary,markdown`
-- diario: `--journal` e `--journal-tags`
-- comparacao: `--compare`
-- importacao: `--import`
-- telemetria: `--telemetry on|off|status`
-- plugin: `--plugin`
+- `defaultProfileId`
+- `baseDir`
+- `ai.provider` (normalizado para `openai` no setup)
+- `ai.model` (fixado em `gpt-5-mini-2025-08-07` no setup)
+- `interview.defaultMode` (`adaptive`/`phased`)
+- `interview.maxQuestionsPerSession`
+- `privacy.telemetryOptIn`
+- `consent.*`
 
-## Estrutura de dados local (resumo)
+### Secrets
+
+Arquivo: `<baseDir>/settings.secrets.json`
+
+- API key pode ser persistida criptografada quando `MINDCLONE_ENCRYPTION_KEY` estiver definida.
+- Sem chave, a CLI nao persiste secret e avisa que sera usada apenas na execucao atual.
+
+### Criptografia de dados sensiveis
+
+- Camada: AES-256-GCM com chave derivada via scrypt.
+- Se perfil existente foi salvo com chave e a chave atual nao confere, a leitura falha com mensagem orientada.
+
+## Estrutura atual de dados
 
 ```text
 <baseDir>/
+  settings.json
+  settings.secrets.json
+  telemetry.json
   profiles/
     <profileId>/
       state.json
@@ -158,78 +209,143 @@ A CLI mostra o diretorio final e cada arquivo gerado em:
         session-<timestamp>.json
   exports/
     <profileId>/
+      context-pack.md
       profile.json
       profile.md
       summary.txt
       rag-chunks.jsonl
-      context-pack.md
-  settings.json
-  settings.secrets.json
-  telemetry.json
 ```
 
-## Troubleshooting rapido
+## Estrutura atual do codigo
 
-### Dados criptografados detectados
+```text
+bin/
+  mindclone.js
+src/
+  index.js
+  cli/
+    menu.js
+    tui-shell.js
+    commands.js
+    setup-wizard.js
+    screen-router.js
+  ai/
+    client.js
+    adaptive-interview-engine.js
+    handoff-manager.js
+  config/
+    settings-manager.js
+    settings-schema.js
+  profile/
+    profile-builder.js
+    profile-exporter.js
+    context-pack-exporter.js
+  phases/
+    phase-01-identity.js ... phase-10-integration.js
+  storage/
+    session-manager.js
+    local-store.js
+  safety/
+    consent-manager.js
+    crisis-protocol.js
+    encryption-manager.js
+  ops/
+    telemetry.js
+    plugins.js
+    mirror.js
+    journal.js
+    importer.js
+    compare.js
+scripts/
+  smoke-release.ps1
+  release-readiness.js
+test/
+  *.test.js / *.e2e.test.js
+.github/workflows/
+  ci.yml
+tasks/
+  evidence/
+  todo.md
+```
 
-Causa: perfil foi salvo com criptografia e a chave atual nao confere.
+## Qualidade e testes
 
-Acao recomendada:
+Comandos:
 
-- definir `MINDCLONE_ENCRYPTION_KEY` correta e tentar novamente
-- ou usar novo `--profile` para recomecar
+```bash
+npm run lint
+npm run format:check
+npm run typecheck
+npm test
+npm run verify
+```
 
-### Perfil nao encontrado
+Observacao:
 
-Causa: `--profile`/`--baseDir` nao correspondem a dados existentes.
+- `npm run verify` cobre `lint + typecheck + test`.
+- O CI tambem executa `format:check` (obrigatorio para merge verde).
 
-Acao recomendada:
+## Smoke e readiness de release
 
-- revisar `--baseDir`
-- revisar `--profile`
-- evitar `--resume` no primeiro uso
-
-### Falha ao exportar documentos
-
-Causa comum: formato invalido em `--export` ou erro de escrita.
-
-Acao recomendada:
-
-- usar formatos suportados (`json`, `markdown`, `summary`, `rag-chunks`, `context-pack`)
-- validar permissao de escrita no diretorio base
-
-## Qualidade
-
-- testes: `npm test`
-- lint: `npm run lint`
-- typecheck: `npm run typecheck`
-- verificacao completa: `npm run verify`
-- smoke assistido PowerShell: `npm run smoke:powershell`
-
-## Smoke de release (PowerShell)
-
-Para gerar evidencias auditaveis de onboarding/sessao com handoff/export:
+### Smoke assistido (PowerShell)
 
 ```powershell
 npm run smoke:powershell
 ```
 
-Saidas geradas:
+Saidas em `tasks/evidence/`:
 
-- relatorio JSON em `tasks/evidence/smoke-report-<timestamp>.json`
-- log da sessao em `tasks/evidence/smoke-session-<timestamp>.log`
-- log de status/export em `tasks/evidence/smoke-status-<timestamp>.log`
+- `smoke-report-<timestamp>.json`
+- `smoke-bootstrap-<timestamp>.log`
+- `smoke-session-<timestamp>.log`
+- `smoke-status-<timestamp>.log`
 
-## Readiness consolidado
-
-Para executar `verify` + smoke e gerar um unico status de prontidao:
+### Readiness consolidado
 
 ```bash
 npm run release:readiness
 ```
 
-Saidas:
+Saidas em `tasks/evidence/`:
 
-- `tasks/evidence/release-readiness-<timestamp>.json`
-- `tasks/evidence/release-readiness-verify-<timestamp>.log`
-- `tasks/evidence/release-readiness-smoke-<timestamp>.log`
+- `release-readiness-<timestamp>.json`
+- `release-readiness-verify-<timestamp>.log`
+- `release-readiness-smoke-<timestamp>.log`
+
+## Troubleshooting rapido
+
+### `mindcloner` nao encontrado
+
+- Rode `npm link` no repo e abra nova sessao de terminal.
+- Em alternativa, use `npx mindcloner ...` ou `node bin/mindclone.js ...`.
+
+### Falha com dados criptografados
+
+- Defina `MINDCLONE_ENCRYPTION_KEY` correta antes de acessar perfil antigo.
+- Ou use novo `--profile` para iniciar um perfil limpo.
+
+### `--resume` com perfil inexistente
+
+- Confirme `--baseDir` e `--profile`.
+- Rode sem `--resume` para criar perfil novo.
+
+### CI falhando em formatacao
+
+- Rode `npm run format` e depois `npm run format:check`.
+
+## Plugin API (resumo)
+
+`--plugin` aceita caminho(s) para modulo CommonJS com contrato:
+
+```js
+module.exports = {
+  name: "meu-plugin",
+  async onCliEvent(eventName, context) {
+    // tratar evento
+  },
+};
+```
+
+## Licenca
+
+MIT (`LICENSE`).
